@@ -1,8 +1,8 @@
 /* ==========================================
    4R BET  |  chat-page.js
-   Online chat page ka controller.
-   Messages Firestore me save hote hain, admin panel
-   se real time reply aata hai.
+   Controller for the online chat page.
+   Messages are stored in Firestore and the admin panel
+   answers them in real time.
    ========================================== */
 
 (function () {
@@ -75,7 +75,7 @@
     if (!stateEl) return;
     stateEl.innerHTML = online
       ? "<i></i> Online &middot; Reply in minutes"
-      : "<i></i> Offline &middot; internet check karein";
+      : "<i></i> Offline &middot; check your internet";
     stateEl.classList.toggle("is-off", !online);
   }
 
@@ -325,7 +325,7 @@
 
     C.editMessage(chatId, editing.msg.id, text).then(function (res) {
       closePopup();
-      if (!res.ok) toast(res.error || "Edit nahi hua");
+      if (!res.ok) toast(res.error || "Could not save the edit");
     });
   });
 
@@ -342,7 +342,7 @@
     closePopup();
 
     C.deleteMessage(chatId, id).then(function (res) {
-      if (!res.ok) toast(res.error || "Delete nahi hua");
+      if (!res.ok) toast(res.error || "Could not delete the message");
     });
   });
 
@@ -362,7 +362,7 @@
     lock(true);
     C.send(chatId, { who: "user", text: t, name: myName }).then(function (res) {
       lock(false);
-      if (!res.ok) toast(res.error || "Message nahi gaya");
+      if (!res.ok) toast(res.error || "Message was not sent");
     });
   }
 
@@ -373,7 +373,7 @@
     if (!text) return;
 
     if (!C.isOnline()) {
-      toast("Internet nahi hai. Connection check karein.");
+      toast("You are offline. Please check your internet connection.");
       return;
     }
 
@@ -408,9 +408,9 @@
           name: myName
         });
       }).then(function (res) {
-        if (res && !res.ok) toast(res.error || "Image nahi gayi");
+        if (res && !res.ok) toast(res.error || "Image was not sent");
       }).catch(function (err) {
-        toast(err.message || "Image nahi gayi");
+        toast(err.message || "Image was not sent");
       });
     });
   }
@@ -429,9 +429,9 @@
           name: myName
         });
       }).then(function (res) {
-        if (res && !res.ok) toast(res.error || "File nahi gayi");
+        if (res && !res.ok) toast(res.error || "File was not sent");
       }).catch(function (err) {
-        toast(err.message || "File nahi gayi");
+        toast(err.message || "File was not sent");
       });
     });
   }
@@ -446,7 +446,7 @@
 
     C.ensureChat(chatId, myName).then(function (res) {
       setState(!!C.isOnline());
-      if (res && !res.ok) toast(res.error || "Chat connect nahi hua");
+      if (res && !res.ok) toast(res.error || "Could not connect to the chat");
     });
 
     C.watchMessages(chatId, function (list, online) {
@@ -505,7 +505,7 @@
     });
   }
 
-  /* pehle se naam hai? warna complaint se guess karo */
+  /* do we already have a name? otherwise guess it from the complaint */
   if (!myName) {
     var g = guessName();
     if (g) {

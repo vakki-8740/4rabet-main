@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Chat page full-screen app shell hai:
-       page scroll/zoom band, sirf chat list scroll karegi -->
+  <!-- The chat page is a full-screen app shell:
+       page scroll/zoom is disabled, only the chat list scrolls -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Online Chat &mdash; 4R BET</title>
   <link rel="icon" type="image/jpeg" href="favicon/photo_2026-10-01_23-48-05.jpg">
@@ -66,7 +66,7 @@
 
           <div class="menu-foot">
             <strong>4R BET Support Center</strong><br>
-            Deposit, withdrawal aur verification ki madad &mdash; 24x7.
+            Help with deposits, withdrawals and verification &mdash; 24x7.
           </div>
         </nav>
       </div>
@@ -86,7 +86,7 @@
       </div>
     </div>
 
-    <!-- ---------- MESSAGES (sirf yahi scroll hoga) ---------- -->
+    <!-- ---------- MESSAGES (only this area scrolls) ---------- -->
     <div class="chat-messages" id="chatMessages">
       <div class="msg msg--agent msg--welcome">
         <span class="msg-name">4RABET HELP CENTER</span>
@@ -131,9 +131,9 @@
       <input type="file" id="fileInput" accept=".pdf,.doc,.docx,.xls,.xlsx,.txt,.zip" hidden>
     </div>
 
-    <!-- ---------- INPUT BAR (hamesha niche dikhta rahe) ---------- -->
+    <!-- ---------- INPUT BAR (always stays at the bottom) ---------- -->
     <form class="chat-input" id="chatForm">
-      <input type="text" id="chatField" placeholder="Apna message likhiye..." autocomplete="off" required>
+      <input type="text" id="chatField" placeholder="Type your message..." autocomplete="off" required>
       <button type="submit" class="btn btn--send">Send</button>
     </form>
 
@@ -143,17 +143,17 @@
     <p>&copy; <span class="year"></span> 4R BET &mdash; All Rights Reserved</p>
   </footer>
 
-  <!-- ================= NAME POPUP (pehli baar) ================= -->
+  <!-- ================= NAME POPUP (first visit) ================= -->
   <div class="modal-backdrop" id="nameModal" role="dialog" aria-modal="true">
     <div class="modal">
       <div class="modal-icon">
         <svg viewBox="0 0 24 24" width="30" height="30" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.6-.8L3 21l1.9-5.2a8.4 8.4 0 0 1-.9-3.8 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 7.9Z"></path></svg>
       </div>
-      <h3 class="modal-title">Apna naam batayein</h3>
-      <p class="modal-text">Support team aapko is naam se pehchanegi.</p>
+      <h3 class="modal-title">Tell us your name</h3>
+      <p class="modal-text">Our support team will recognise you by this name.</p>
       <div class="field" style="text-align:left">
         <label class="label" for="nameField">Your Name</label>
-        <input type="text" id="nameField" maxlength="40" placeholder="Aapka naam" autocomplete="name">
+        <input type="text" id="nameField" maxlength="40" placeholder="Your name" autocomplete="name">
       </div>
       <button type="button" class="btn btn--block" id="nameSave">Start Chat</button>
     </div>

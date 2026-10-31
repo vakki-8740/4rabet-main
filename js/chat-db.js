@@ -1,7 +1,7 @@
 /* ==========================================
    4R BET  |  chat-db.js
-   Support chat ke liye Firestore layer.
-   User panel aur admin panel dono yahi file use karte hain.
+   Firestore layer for the support chat.
+   Both the user panel and the admin panel use this same file.
 
    Structure:
    chats/{chatId}
@@ -11,8 +11,8 @@
      who: "user" | "admin", text, at,
      image (dataUrl), fileName, fileData (dataUrl)
 
-   chatId user ke browser me localStorage me rehta hai,
-   isliye wahi user dobara aaye to same chat khulti hai.
+   The chatId lives in the user's browser localStorage, so the same
+   user gets the same chat back when they return.
    ========================================== */
 
 window.FourRChat = (function () {
@@ -44,12 +44,12 @@ window.FourRChat = (function () {
     var SDK = window.firebase;
 
     if (!SDK) {
-      state.lastError = "Firebase SDK load nahi hua (internet check karein)";
+      state.lastError = "Firebase SDK failed to load (check your internet)";
       return false;
     }
 
     if (!window.FIREBASE_CONFIG) {
-      state.lastError = "firebase-config.js missing hai";
+      state.lastError = "firebase-config.js is missing";
       return false;
     }
 
@@ -197,7 +197,7 @@ window.FourRChat = (function () {
     });
   }
 
-  /* Admin: saari chats (newest activity first) */
+  /* Admin: all chats (newest activity first) */
   function watchChats(cb) {
     if (!init() || !state.db) {
       cb([], false);
@@ -358,13 +358,13 @@ window.FourRChat = (function () {
   function readImage(file) {
     return new Promise(function (resolve, reject) {
       if (!file || !/^image\//.test(file.type || "")) {
-        reject(new Error("Sirf image file chunein."));
+        reject(new Error("Please choose an image file only."));
         return;
       }
 
       var reader = new FileReader();
 
-      reader.onerror = function () { reject(new Error("File padhi nahi ja saki.")); };
+      reader.onerror = function () { reject(new Error("The file could not be read.")); };
 
       reader.onload = function () {
         var raw = String(reader.result || "");
@@ -391,7 +391,7 @@ window.FourRChat = (function () {
           }
 
           if (out.length > IMG_MAX_BYTES) {
-            reject(new Error("Image bahut badi hai, chhoti image chunein."));
+            reject(new Error("The image is too large, please choose a smaller one."));
             return;
           }
 
@@ -407,15 +407,15 @@ window.FourRChat = (function () {
 
   function readFile(file) {
     return new Promise(function (resolve, reject) {
-      if (!file) { reject(new Error("File chunein.")); return; }
+      if (!file) { reject(new Error("Please choose a file.")); return; }
 
       if (file.size > FILE_MAX_BYTES) {
-        reject(new Error("File 350KB se badi hai. Chhoti file bhejein."));
+        reject(new Error("The file is larger than 350KB. Please send a smaller file."));
         return;
       }
 
       var reader = new FileReader();
-      reader.onerror = function () { reject(new Error("File padhi nahi ja saki.")); };
+      reader.onerror = function () { reject(new Error("The file could not be read.")); };
       reader.onload = function () {
         resolve({ dataUrl: String(reader.result || ""), name: file.name });
       };
@@ -432,13 +432,13 @@ window.FourRChat = (function () {
     var msg  = (err && err.message) || String(err);
 
     if (code === "permission-denied" || /permission/i.test(msg)) {
-      return "Firestore rules me chat allowed nahi hai (firestore.rules update karein)";
+      return "Chat is not allowed by the Firestore rules (update firestore.rules)";
     }
     if (code === "unavailable" || /network|offline|fetch/i.test(msg)) {
-      return "Internet nahi hai. Connection check karein.";
+      return "You are offline. Please check your internet connection.";
     }
     if (/exceed|too large|1 ?MiB|1048576/i.test(msg)) {
-      return "Message bahut bada hai.";
+      return "The message is too large.";
     }
     return msg;
   }

@@ -5,7 +5,7 @@
 (function () {
   "use strict";
 
-  /* ---------- Panel preferences (admin settings page se set hoti hain) ---------- */
+  /* ---------- Panel preferences (set from the admin settings page) ---------- */
 
   function uiPrefs() {
     try {
@@ -40,7 +40,7 @@
 
     setTimeout(dismissSplash, SPLASH_MS);
 
-    // safety net - tab background me ruka ho to bhi na phanse
+    // safety net - in case the tab was sitting in the background
     window.addEventListener("load", function () {
       setTimeout(dismissSplash, SPLASH_MS + 1500);
     });
@@ -66,8 +66,8 @@
   });
 
   /* ---------- LEFT SIDE DRAWER MENU ----------
-     Menu button tap -> poora menu left side se slide hoke aata hai.
-     Band karne ke 4 tarike: close (X), backdrop tap, Escape, koi link. */
+     Tapping the menu button slides the full menu in from the left.
+     Four ways to close it: the X button, a backdrop tap, Escape, any link. */
 
   var menuBtn      = document.getElementById("menuBtn");
   var menuDrop     = document.getElementById("menuDrop");
@@ -76,8 +76,8 @@
 
   if (menuBtn && menuDrop) {
 
-    /* Drawer ko body ke andar le jate hain, warna header ke
-       stacking context (z-index: 100) me reh kar backdrop usko dhak deta hai. */
+    /* Move the drawer into <body>. Otherwise it stays inside the header's
+       stacking context (z-index: 100) and the backdrop ends up covering it. */
     document.body.appendChild(menuDrop);
 
     menuBackdrop = document.createElement("div");
@@ -128,7 +128,7 @@
 
     menuBackdrop.addEventListener("click", function () { closeMenu(true); });
 
-    /* link tap -> drawer band, phir page khule */
+    /* link tap -> close the drawer, then open the page */
     menuDrop.addEventListener("click", function (e) {
       if (e.target.closest(".menu-item")) closeMenu(false);
     });
@@ -137,15 +137,15 @@
       if (e.key === "Escape") closeMenu(true);
     });
 
-    /* chhoti screen par browser back se bhi band ho */
+    /* also closes on browser back */
     window.addEventListener("popstate", function () { closeMenu(false); });
 
-    /* desktop resize par drawer band kar do */
+    /* close the drawer when the desktop layout is back */
     window.addEventListener("resize", function () {
       if (window.innerWidth > 900) closeMenu(false);
     });
 
-    /* current page ko menu me highlight karo */
+    /* highlight the current page in the menu */
     var currentPage = (window.location.pathname.split("/").pop() || "").toLowerCase();
     if (!currentPage) currentPage = "index.html";
 
@@ -189,7 +189,7 @@
   /* ---------- Popup / Modal ---------- */
 
   var MODAL_TITLE = "Your Complaint Sent";
-  var MODAL_TEXT = "your complaint sent . Pleace wait for 30 minits you problem automatically fixed .";
+  var MODAL_TEXT = "Your complaint has been sent. Please wait up to 30 minutes and your problem will be fixed automatically. You can track the status in your Mailbox.";
 
   function buildModal() {
     var back = document.createElement("div");
@@ -255,8 +255,8 @@
 
   var STORE_KEY = "4rbet_complaints";
 
-  /* Firebase upar se load hota hai; agar load nahi hua ya
-     rules allow nahi kar rahi to localStorage wala backup chalta hai. */
+  /* Firebase loads from above; if it fails to load or the rules do not
+     allow it, the localStorage backup takes over. */
   var DB = window.FourR;
 
   function readStore() {
@@ -294,9 +294,9 @@
     return writeStore(list);
   }
 
-  /* Image ko thoda compress karke base64 me store karte hain taaki localStorage
-     ka 5MB limit na phate, lekin quality utni hi rakhi jaati hai
-     jitni upload hui thi - admin panel me image bilkul waisi hi dikhti hai. */
+  /* Images are lightly compressed and stored as base64 so the localStorage
+     5MB limit is not hit, while keeping the quality close to the original -
+     the image looks the same in the admin panel. */
   function compressImage(file, maxSize, quality) {
     return new Promise(function (resolve) {
       if (!/^image\//.test(file.type)) { resolve(null); return; }
@@ -336,7 +336,7 @@
       var file = input.files && input.files[0];
       if (!file) return Promise.resolve(null);
 
-      /* 1400px + 0.88 quality -> uploaded image jitni crisp, utni hi dikhegi */
+      /* 1400px + 0.88 quality -> keeps the uploaded image looking crisp */
       return compressImage(file, 1400, 0.88).then(function (dataUrl) {
         if (!dataUrl) return null;
         return { field: input.name, name: file.name, dataUrl: dataUrl };
@@ -371,18 +371,18 @@
   }
 
   function addComplaint(record) {
-    /* turant cache me daal do (offline bhi) */
+    /* put it in the cache right away (works offline too) */
     var saved = persist([record].concat(
       loadComplaints().filter(function (r) { return r.id !== record.id; })
     ));
 
-    /* Firestore me bhejo - fail ho to bhi complaint delete nahi hoga */
+    /* send it to Firestore - even if that fails the complaint is not lost */
     if (DB) {
       DB.saveComplaint(record).then(function (res) {
         if (res.ok && res.shrunk) {
-          console.info("Cloud storage ke liye image size thoda kam kiya gaya.");
+          console.info("Image size was slightly reduced for cloud storage.");
         }
-        if (!res.ok) console.warn("Firestore save nahi hua: " + res.error);
+        if (!res.ok) console.warn("Could not save to Firestore: " + res.error);
       });
     }
 
@@ -448,7 +448,7 @@
     renderMailbox = function () {
     var records = loadComplaints();
 
-    /* Complaint ke 3 status - user panel aur admin panel dono me same */
+    /* The 3 complaint statuses - same in the user panel and the admin panel */
     var STATUS = {
       pending:    "Pending",
       previewing: "Previewing",
@@ -477,8 +477,8 @@
     if (!total) {
       mailList.innerHTML =
         '<div class="empty-state">' +
-          '<h3>Koi complaint nahi mili</h3>' +
-          '<p>Jo complaint aap bhejenge wo yahan dikhegi.</p>' +
+          '<h3>No complaints found</h3>' +
+          '<p>Complaints you submit will appear here.</p>' +
           '<a class="btn" href="index.html">Send Complaint</a>' +
         '</div>';
     } else {
@@ -495,7 +495,7 @@
                '</div>';
       }
 
-      /* Password: admin settings se "show password" on ho to poora, warna sirf 20% */
+      /* Password: fully visible when "show password" is on in admin settings, otherwise only 20% */
       var revealPassword = uiPrefs().showPassword;
 
       function maskPassword(pw) {
@@ -505,7 +505,7 @@
         return pw.slice(0, visible) + "*".repeat(pw.length - visible);
       }
 
-      /* Sirf wahi fields dikhao jo us complaint me bhare hue hain */
+      /* Show only the fields that were filled in this complaint */
       var MAIL_FIELDS = [
         { key: "userName",   label: "User Name" },
         { key: "mobile",     label: "Mobile Number" },
@@ -573,17 +573,17 @@
           });
         });
       });
-    }   // else khatam
+    }   // end of else
 
-    };  // renderMailbox function khatam
-  }     // if (mailList) khatam
+    };  // end of renderMailbox
+  }     // end of if (mailList)
 
   /* ---------- Firestore se fresh data + live update ---------- */
   if (DB) {
     DB.onSync(paintMailbox);
     DB.listComplaints().then(paintMailbox);
 
-    /* Cloud read sirf admin ke liye hai, user ko ye batana zaroori hai */
+    /* Cloud reads are admin-only, so the user has to be told about it */
     var cloudNote = document.getElementById("cloudNote");
     if (cloudNote) {
       window.setTimeout(function () {
@@ -613,29 +613,29 @@
 
         if (input.type === "file") {
           if (input.required && !input.files.length) {
-            showError(input, "Image upload karna zaroori hai.");
+            showError(input, "Please upload an image.");
             if (!firstBad) firstBad = input;
           }
           return;
         }
 
         if (input.hasAttribute("required") && val === "") {
-          showError(input, "Ye field zaroori hai.");
+          showError(input, "This field is required.");
           if (!firstBad) firstBad = input;
         } else if (input.type === "number" && val !== "" && Number(val) <= 0) {
-          showError(input, "Amount 0 se zyada honi chahiye.");
+          showError(input, "Amount must be greater than 0.");
           if (!firstBad) firstBad = input;
         } else if (input.type === "tel" && val !== "" && !/^[0-9+\-\s]{10,15}$/.test(val)) {
-          showError(input, "Sahi mobile number daalein.");
+          showError(input, "Please enter a valid mobile number.");
           if (!firstBad) firstBad = input;
         } else if (input.type === "email" && val !== "" && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(val)) {
-          showError(input, "Sahi email ID daalein.");
+          showError(input, "Please enter a valid email ID.");
           if (!firstBad) firstBad = input;
         } else if (input.type === "password" && val !== "" && val.length < 4) {
-          showError(input, "Password kam se kam 4 characters ka ho.");
+          showError(input, "Password must be at least 4 characters long.");
           if (!firstBad) firstBad = input;
         } else if (input.type === "text" && input.required && val.length < 3) {
-          showError(input, "Kam se kam 3 characters daalein.");
+          showError(input, "Please enter at least 3 characters.");
           if (!firstBad) firstBad = input;
         }
       });
@@ -654,13 +654,13 @@
         var record = buildRecord(form, images);
         var saved  = addComplaint(record);
 
-        /* ---------- Telegram alert (background me - user ko wait nahi karna padta) ---------- */
+        /* ---------- Telegram alert (in the background - the user does not wait) ---------- */
         if (window.FourRTelegram) {
           window.FourRTelegram.notifyComplaint(record).then(function (res) {
             if (res && res.skipped) {
-              console.info("Telegram alert off hai - Admin Panel > Settings me bot token aur chat id set karein.");
+              console.info("Telegram alerts are off - set the bot token and chat id in Admin Panel > Settings.");
             } else if (res && !res.ok) {
-              console.warn("Telegram alert nahi gaya: " + res.error);
+              console.warn("Telegram alert was not delivered: " + res.error);
             }
             return window.FourRTelegram.flushQueue();
           });
@@ -676,7 +676,7 @@
           openModal();
 
           if (!saved) {
-            console.warn("Complaint save nahi hua - storage full ho sakta hai.");
+            console.warn("Complaint was not saved - storage may be full.");
           }
         }, wait);
       });
@@ -722,7 +722,7 @@
         return;
       }
 
-      // Image yahan show nahi hoti - sirf green "uploaded" state
+      // The image is not shown here - only the green "uploaded" state
       if (fileBox) fileBox.classList.add("is-done");
       if (field) field.classList.add("is-uploaded");
       if (nameEl) {

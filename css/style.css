@@ -73,7 +73,7 @@ img { max-width: 100%; display: block; }
   overflow: hidden;
 }
 
-/* Banner ka text already image ke andar hai - isliye koi overlay text nahi */
+/* The banner text is already inside the image - so no overlay text */
 .banner-img {
   width: 100%;
   height: auto;
@@ -116,13 +116,13 @@ img { max-width: 100%; display: block; }
 .menu-btn.is-open span:nth-child(3) { transform: translateY(-6px) rotate(-45deg); }
 
 /* ---------- LEFT SIDE DRAWER MENU ----------
-   Menu button tap karne par poora menu left side se
-   slide hoke aata hai (mobile app jaisa). */
+   Tapping the menu button slides the full menu in from the
+   left side, like a mobile app. */
 
 body.is-menu-open { overflow: hidden; }
 
-/* Drawer khula ho to header ka hamburger chhupa do -
-   warna do close (X) buttons ek saath dikhte hain. */
+/* Hide the header hamburger while the drawer is open -
+   otherwise two close (X) buttons show up at once. */
 body.is-menu-open .menu-btn {
   opacity: 0;
   visibility: hidden;
@@ -283,7 +283,7 @@ body.is-menu-open .menu-btn {
   outline: none;
 }
 
-/* ICON container - image black-styled look */
+/* ICON container - keeps the black styled image look */
 .card-icon {
   width: 82px;
   height: 82px;
@@ -512,9 +512,9 @@ body.is-menu-open .menu-btn {
 
 /* ==========================================
    CHAT PAGE : FULL SCREEN APP SHELL
-   Mobile par poori screen cover karta hai.
-   Page scroll + pinch zoom band rahega,
-   sirf message list scroll hogi.
+   Covers the whole screen on mobile.
+   Page scroll and pinch zoom are disabled,
+   only the message list scrolls.
    ========================================== */
 
 .chat-page {
@@ -531,10 +531,10 @@ body.is-menu-open .menu-btn {
   background: var(--bg-soft);
 }
 
-/* header fix nahi - flex me apni jagah */
+/* header is not fixed - takes its place in the flex row */
 .chat-page .site-header { position: static; flex: 0 0 auto; }
 
-/* footer chipak kar jagah kheech leta hai, mobile par chhupa */
+/* the footer sticks to the bottom and takes space, hidden on mobile */
 .chat-page .chat-foot {
   flex: 0 0 auto;
   padding: 6px 16px;
@@ -621,7 +621,7 @@ body.is-menu-open .menu-btn {
   box-shadow: 0 0 0 3px rgba(18, 161, 80, .18);
 }
 
-/* ---------- messages : sirf ye scroll hoti hai ---------- */
+/* ---------- messages : only this area scrolls ---------- */
 
 .chat-page .chat-messages {
   flex: 1 1 auto;
@@ -678,7 +678,7 @@ body.is-menu-open .menu-btn {
 .chat-page .chat-input {
   flex: 0 0 auto;
   padding: 10px 12px;
-  /* iPhone ka home / gesture bar na chhuye */
+  /* keep clear of the iPhone home / gesture bar */
   padding-bottom: calc(10px + env(safe-area-inset-bottom, 0px));
   background: #ffffff;
   border-top: 1px solid var(--line);
@@ -689,7 +689,7 @@ body.is-menu-open .menu-btn {
 .chat-page .chat-input input {
   flex: 1 1 auto;
   min-width: 0;
-  /* 16px se kam font iOS par page zoom karwa deta hai */
+  /* a font below 16px makes iOS zoom the page */
   font-size: 16px;
   padding: 11px 14px;
   border: 1px solid #d1d5db;
@@ -774,7 +774,7 @@ body.is-menu-open .menu-btn {
   color: #ffffff;
 }
 
-/* messages ab tap karke popup khol sakte hain */
+/* messages can now be tapped to open the popup */
 .msg {
   cursor: pointer;
   transition: border-color .15s, box-shadow .15s;
@@ -1402,7 +1402,7 @@ body.is-menu-open .menu-btn {
 
 .msg strong { color: #111827; }
 
-/* Topic buttons (welcome message ke andar) */
+/* Topic buttons (inside the welcome message) */
 .chat-topic-btn {
   display: block;
   width: 100%;
@@ -1470,7 +1470,7 @@ body.is-menu-open .menu-btn {
   align-items: center;
   justify-content: center;
   background: #ffffff;
-  /* JS ke chhoot jane pe bhi CSS khud se hat jata hai */
+  /* the CSS removes it by itself even if the JS never runs */
   animation: splash-out .4s ease 1.6s both;
 }
 
@@ -1518,7 +1518,7 @@ body.is-splash { overflow: hidden; }
   .options { padding: 40px 16px 56px; }
   .options-title { font-size: 23px; margin-bottom: 28px; }
 
-  /* Header: logo left, menu right - ek hi row me */
+  /* Header: logo left, menu right - single row */
   .header-inner {
     flex-direction: row;
     justify-content: space-between;
@@ -1528,14 +1528,14 @@ body.is-splash { overflow: hidden; }
 
   .menu-btn { width: 40px; height: 38px; }
 
-  /* Banner: poori image dikhe, kuch crop na ho */
+  /* Banner: show the whole image, no cropping */
   .banner-img {
     min-height: 0;
     height: auto;
     object-fit: contain;
   }
 
-  /* Buttons thode bade (touch friendly) */
+  /* Slightly bigger buttons (touch friendly) */
   .btn { padding: 13px 20px; font-size: 15.5px; }
   .btn--back { padding: 11px 18px; }
 
@@ -1562,7 +1562,7 @@ body.is-splash { overflow: hidden; }
   .btn--send { padding: 11px 18px; }
   .msg { max-width: 88%; }
 
-  /* Toast chhota */
+  /* Smaller toast */
   .toast { left: 16px; right: 16px; bottom: 16px; transform: none; text-align: center; }
 }
 
@@ -1599,7 +1599,7 @@ body.is-splash { overflow: hidden; }
 
 /* ==========================================
    INFO PAGES  (Terms & Conditions / About Us)
-   Clean, simple, bade clean points
+   Clean, simple, easy-to-scan points
    ========================================== */
 
 .doc {
@@ -1724,7 +1724,7 @@ body.is-splash { overflow: hidden; }
   line-height: 1.65;
 }
 
-/* chhota 2-column grid - features / highlights */
+/* small 2-column grid - features / highlights */
 .doc-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));

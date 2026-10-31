@@ -1,13 +1,13 @@
 /* ==========================================
    4R BET  |  firebase-db.js
-   Firestore se complaints read / write.
+   Read / write complaints from Firestore.
 
-   Kaam ka tareeka:
+   How it works:
    - Firestore = main storage (source of truth)
-   - localStorage = offline cache, taaki net na ho tab bhi
-     site aur admin panel chalu rahe
-   - Cloud me image size 1MB document limit se safe rahe
-     isliye bhejne se pehle size check + auto shrink
+   - localStorage = offline cache, so the site and the admin panel
+     keep working even without a network
+   - Images are checked and auto-shrunk before sending so the
+     1MB Firestore document limit is never hit
    ========================================== */
 
 window.FourR = (function () {
@@ -16,19 +16,19 @@ window.FourR = (function () {
   var CACHE_KEY = "4rbet_complaints";
   var COL = (window.FIREBASE_COLLECTION) || "complaints";
 
-  /* Firestore ka 1 document limit 1 MiB hai.
-     Usse aage nahi jaate - khud se margin rakhte hain. */
+  /* The Firestore document limit is 1 MiB.
+     We never go that far - we keep our own margin. */
   var DOC_LIMIT_BYTES = 900 * 1024;
 
   var state = {
     db: null,
-    online: false,     /* Firestore connected hai ya nahi */
-    checked: false,    /* ek baar check ho chuka hai   */
+    online: false,     /* is Firestore connected or not */
+    checked: false,    /* the check has already run  */
     lastError: ""
   };
 
   /* ==========================================
-     LOCAL CACHE  (sync - turant kaam karta hai)
+     LOCAL CACHE  (sync - works instantly)
      ========================================== */
 
   function cacheRead() {
@@ -49,14 +49,14 @@ window.FourR = (function () {
     }
   }
 
-  /* Naya record cache me sab aage daal do (newest first) */
+  /* Put the new record at the top of the cache (newest first) */
   function cacheAdd(record) {
     var list = cacheRead();
     list = list.filter(function (r) { return r.id !== record.id; });
     list.unshift(record);
 
     if (!cacheWrite(list)) {
-      /* quota full -> images hata kar dubara */
+      /* quota full -> drop the images and try again */
       var light = [Object.assign({}, record, { images: [] })];
       list.slice(1).forEach(function (r) {
         light.push(r.images && r.images.length ? Object.assign({}, r, { images: [] }) : r);
@@ -82,7 +82,7 @@ window.FourR = (function () {
   }
 
   function emit() {
-    /* pages isse sun ke dobara render karte hain */
+    /* pages listen to this and render again */
     try {
       window.dispatchEvent(new CustomEvent("4r-sync"));
     } catch (e) { /* old browser */ }
@@ -99,12 +99,12 @@ window.FourR = (function () {
     var SDK = window.firebase;
 
     if (!SDK) {
-      state.lastError = "Firebase SDK load nahi hua (internet check karein)";
+      state.lastError = "Firebase SDK failed to load (check your internet)";
       return false;
     }
 
     if (!window.FIREBASE_CONFIG) {
-      state.lastError = "firebase-config.js missing hai";
+      state.lastError = "firebase-config.js is missing";
       return false;
     }
 
@@ -126,7 +126,7 @@ window.FourR = (function () {
 
   /* ==========================================
      IMAGE SIZE GUARD
-     Firestore 1MB limit se pehle hi chhota kar do
+     Shrink before the Firestore 1MB limit is reached
      ========================================== */
 
   function bytes(str) { return str.length; }
@@ -159,8 +159,8 @@ window.FourR = (function () {
     });
   }
 
-  /* Document 1MB se bada ban raha ho to images ko
-     step-by-step chhota karte jao jab tak fit na ho jaye. */
+  /* If the document is heading past 1MB, shrink the images step by
+     step until it fits. */
   function fitForCloud(record) {
     var out = JSON.parse(JSON.stringify(record));
 
@@ -202,7 +202,7 @@ window.FourR = (function () {
   }
 
   /* ==========================================
-     WRITE  : nayi complaint
+     WRITE  : new complaint
      ========================================== */
 
   function saveComplaint(record) {
@@ -223,8 +223,8 @@ window.FourR = (function () {
         });
       })
       .catch(function (err) {
-        /* Firestore rule / network issue -> cache me bacha lo,
-           taaki user ka complaint na khoye */
+        /* Firestore rule / network issue -> keep it in the cache so
+           the user's complaint is never lost */
         cacheAdd(record);
         state.lastError = friendly(err);
         return { ok: false, offline: true, error: state.lastError };
@@ -312,7 +312,7 @@ window.FourR = (function () {
   }
 
   /* ==========================================
-     LIVE UPDATE  (admin panel ke liye)
+     LIVE UPDATE  (for the admin panel)
      ========================================== */
 
   function subscribe(cb) {
@@ -347,13 +347,13 @@ window.FourR = (function () {
     var msg  = (err && err.message) || String(err);
 
     if (code === "permission-denied" || /permission/i.test(msg)) {
-      return "Firestore rules me write allowed nahi hai";
+      return "Writing is not allowed by the Firestore rules";
     }
     if (code === "unavailable" || /network|offline|fetch/i.test(msg)) {
-      return "Internet nahi hai - data browser me save ho gaya";
+      return "You are offline - the data was saved in this browser";
     }
     if (/exceed|too large|1 ?MiB|1048576/i.test(msg)) {
-      return "Document 1MB se bada ho gaya";
+      return "The document went past the 1MB limit";
     }
     return msg;
   }
