@@ -345,7 +345,7 @@ export default function Settings() {
                   ? fb.error
                   : fb.online
                   ? "Connected \u00b7 collection: complaints"
-                  : "SDK load nahi hua (internet check karein)"}
+                  : "SDK failed to load (check your internet)"}
               </small>
             </span>
             <span className="adm-set-val">{count}</span>
@@ -360,11 +360,13 @@ export default function Settings() {
           <div className="adm-note" style={{ borderTop: "1px solid var(--line)" }}>
             {fb.error ? (
               <>
-                <b style={{ color: "#e5484d" }}>Cloud save nahi ho raha.</b>
+                <b style={{ color: "#e5484d" }}>Cloud save is not working.</b>
                 <br />
-                Project <b>rbet-6770a</b> ke liye rules publish nahi hui. Firebase Console &gt;
-                Firestore Database &gt; Rules me project ki <b>firestore.rules</b> paste karke{" "}
-                <b>Publish</b> dabayein. Tab tak complaint browser me hi save hoti rahegi.
+                The rules are not published for project{" "}
+                <b>{(window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId) || "your project"}</b>.
+                Open Firebase Console &gt; Firestore Database &gt; Rules, paste this project's{" "}
+                <b>firestore.rules</b> and press <b>Publish</b>. Until then the complaint is only
+                saved in this browser.
               </>
             ) : (
               <>

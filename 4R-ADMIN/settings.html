@@ -292,17 +292,18 @@
           fbState.textContent = "RULES ERROR";
           fbState.style.color = "#b91c1c";
           fbSub.textContent = err;
-          note.innerHTML = '<b style="color:#b91c1c">Cloud save nahi ho raha.</b><br>' +
-            'Project <b>rbet-6770a</b> ke liye rules publish nahi hui. ' +
-            'Firebase Console &gt; Firestore Database &gt; Rules me project ki ' +
-            '<b>firestore.rules</b> paste karke <b>Publish</b> dabayein. ' +
-            'Tab tak complaint browser me hi save hoti rahegi.';
+          var pid = (window.FIREBASE_CONFIG && window.FIREBASE_CONFIG.projectId) || "your project";
+          note.innerHTML = '<b style="color:#b91c1c">Cloud save is not working.</b><br>' +
+            'The rules are not published for project <b>' + pid + '</b>. ' +
+            'Open Firebase Console &gt; Firestore Database &gt; Rules, paste this project\'s ' +
+            '<b>firestore.rules</b> and press <b>Publish</b>. ' +
+            'Until then the complaint is only saved in this browser.';
         } else {
           fbState.textContent = online ? "ONLINE" : "OFFLINE";
           fbState.style.color = online ? "#0f7a3d" : "#9a5b00";
           fbSub.textContent = online
             ? "Connected \u00b7 collection: " + (A.DB ? A.DB.COL : "complaints")
-            : "SDK load nahi hua (internet check karein)";
+            : "SDK failed to load (check your internet)";
         }
 
         fbCount.textContent = A.load().length;

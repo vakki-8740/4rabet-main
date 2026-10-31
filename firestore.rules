@@ -1,20 +1,21 @@
 rules_version = '2';
 
 /* ==========================================================
-   4R BET  |  Firestore Security Rules  (SECURE)
-   Firebase Console > Firestore Database > Rules me paste karein
-   --------------------------------------------------------------
-   Ab sirf admin (4r@admin.com) hi complaints dekh / badal / delete
-   kar sakta hai. Koi bhi user nayi complaint bhej sakta hai.
-
-   IMPORTANT : Neeche ADMIN_EMAIL change karna ho to sirf us
-   ek line ko badal dein - baaki rules same rahenge.
+   4R BET  |  Firestore Security Rules
+   Paste into: Firebase Console > Firestore Database > Rules
+   ----------------------------------------------------------
+   Summary:
+   - Anyone can create a complaint (no login needed).
+   - Only the admin can read, update or delete complaints.
+   - Support chat: a user has no account, so the random chat id
+     in their browser acts as the access key.
    ========================================================== */
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    /* Admin ka login email - isko hi rules me likha gaya hai */
+    /* The admin login email - keep this in sync with the app code
+       (4R-ADMIN/js/auth.js and react-admin/src/lib/fb.js). */
     function adminEmail() {
       return "4r@admin.com";
     }
@@ -26,41 +27,46 @@ service cloud.firestore {
 
     match /complaints/{complaintId} {
 
-      /* Koi bhi user complaint bhej sakta hai (login ke bina) */
+      /* Any visitor can submit a complaint (no login) */
       allow create: if true;
 
-      /* Sirf admin padh sakta hai */
+      /* Only the admin can read */
       allow read: if isAdmin();
 
-      /* Sirf admin status badal sakta hai, aur sirf status field */
+      /* Only the admin can change the status, and only that field */
       allow update: if isAdmin()
                     && request.resource.data.status is string
                     && request.resource.data.diff(resource.data)
                        .affectedKeys().hasOnly(['status', 'statusAt']);
 
-      /* Sirf admin delete kar sakta hai */
+      /* Only the admin can delete */
       allow delete: if isAdmin();
     }
 
     /* ======================================================
        SUPPORT CHAT
        ------------------------------------------------------
-       User bina login ke chat karta hai, isliye chat doc ka
-       random ID hi access key hai (path pata hone par hi read).
-       Admin panel login ke baad hi chat list dikhata hai.
+       Users chat without an account, so the random chat id is
+       the access key (a chat can only be read if its path is
+       known). The admin panel shows the chat list only after
+       login.
+
+       NOTE: this is intentionally open for the guest chat. For
+       a stricter setup, move chat writes behind an authenticated
+       user or a Cloud Function.
        ====================================================== */
 
     match /chats/{chatId} {
 
-      /* user apni chat doc bana / update kar sakta hai */
+      /* a user can create / update their own chat document */
       allow read: if true;
       allow create, update: if true;
 
-      /* poori chat sirf admin delete karega */
+      /* only the admin deletes a whole chat */
       allow delete: if isAdmin();
 
       match /messages/{msgId} {
-        /* chat ke andar ke messages (text / photo / file) */
+        /* messages inside a chat (text / photo / file) */
         allow read, create, update, delete: if true;
       }
     }

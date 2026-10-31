@@ -49,7 +49,7 @@ argv.forEach((a) => {
 });
 
 const OLD_PROJECT = args.oldProject || "rbet-6770a";
-const NEW_PROJECT = args.newProject || "rbet-ffd57";
+const NEW_PROJECT = args.newProject || "rabet-60dae";
 const OLD_KEY = args.oldKey;
 const NEW_KEY = args.newKey;
 const OLD_TOKEN = args.oldToken || process.env.OLD_ID_TOKEN || "";
@@ -62,8 +62,8 @@ if (!OLD_KEY || !NEW_KEY) {
     "\nUsage:\n" +
     "  node tools/migrate-firestore.js --old-key=OLD_API_KEY --new-key=NEW_API_KEY [--dump=backup.json] [--dry-run]\n\n" +
     "Options:\n" +
-    "  --old-project=  (default rbet-6770a)\n" +
-    "  --new-project=  (default rbet-ffd57)\n" +
+    "  --old-project=  (default rbet-6770a - old project with the existing data)\n" +
+    "  --new-project=  (default rabet-60dae)\n" +
     "  --old-token=    purane project ke admin ka Firebase ID token (optional)\n" +
     "  --dump=FILE     saara data JSON backup me bhi save karo\n" +
     "  --dry-run       sirf gino, kuch bhi naye project me na likho\n"
