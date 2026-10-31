@@ -188,6 +188,7 @@
 
   /* ---------- Popup / Modal ---------- */
 
+  var REDIRECT_SECONDS = 5; /* auto-open the chat page after this many seconds */
   var MODAL_TITLE = "Your Complaint Sent";
   var MODAL_TEXT = "Your complaint has been sent. Please wait up to 30 minutes and your problem will be fixed automatically. You can track the status in your Mailbox.";
 
@@ -226,14 +227,44 @@
     ok.className = "btn btn--ghost btn--block modal-stay";
     ok.textContent = "Stay on this page";
 
+    /* Countdown line - the popup moves to the chat on its own */
+    var cd = document.createElement("p");
+    cd.className = "modal-redirect";
+    cd.hidden = true;
+
     box.appendChild(icon);
     box.appendChild(h);
     box.appendChild(p);
     box.appendChild(chat);
     box.appendChild(ok);
+    box.appendChild(cd);
     back.appendChild(box);
 
+    var timer = null;
+
+    function stopCountdown() {
+      if (timer) { clearInterval(timer); timer = null; }
+      cd.hidden = true;
+    }
+
+    function startCountdown(seconds) {
+      stopCountdown();
+      var left = Math.max(1, seconds || 5);
+      cd.hidden = false;
+      cd.textContent = "Opening the chat in " + left + " seconds...";
+      timer = setInterval(function () {
+        left -= 1;
+        if (left <= 0) {
+          stopCountdown();
+          window.location.href = chat.href;
+          return;
+        }
+        cd.textContent = "Opening the chat in " + left + (left === 1 ? " second..." : " seconds...");
+      }, 1000);
+    }
+
     function close() {
+      stopCountdown();
       back.classList.remove("is-open");
     }
 
@@ -248,7 +279,8 @@
       setRef: function (id) {
         /* carry the complaint ID into the chat page */
         chat.href = "online-chat.html" + (id ? "?ref=" + encodeURIComponent(id) : "");
-      }
+      },
+      startCountdown: startCountdown
     };
   }
 
@@ -689,6 +721,7 @@
           form.reset();
           hidePreview(form);
           openModal(record.id);
+          if (modal.startCountdown) modal.startCountdown(REDIRECT_SECONDS);
 
           if (!saved) {
             console.warn("Complaint was not saved - storage may be full.");
