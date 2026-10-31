@@ -30,6 +30,15 @@
 
   var chatId = C.myId();
   var myName = C.myName();
+
+  /* Coming from a complaint? The success popup sends ?ref=CM-xxxxx so the
+     first message already carries the complaint ID. */
+  var refId = "";
+  try {
+    refId = (new URLSearchParams(window.location.search).get("ref") || "").trim();
+  } catch (e) {
+    refId = "";
+  }
   var stick  = true;
   var started = false;
 
@@ -440,9 +449,18 @@
      START
      ========================================== */
 
+  function prefillRef() {
+    if (!refId || !field) return;
+    if (field.value.trim()) return;
+    field.value = "Complaint ID: " + refId + " - ";
+    try { field.setSelectionRange(field.value.length, field.value.length); } catch (e) {}
+  }
+
   function start() {
     if (started) return;
     started = true;
+
+    prefillRef();
 
     C.ensureChat(chatId, myName).then(function (res) {
       setState(!!C.isOnline());

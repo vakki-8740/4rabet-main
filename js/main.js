@@ -215,14 +215,21 @@
     p.className = "modal-text";
     p.textContent = MODAL_TEXT;
 
+    /* Primary action: continue in the live chat so an agent can pick it up */
+    var chat = document.createElement("a");
+    chat.className = "btn btn--block modal-chat";
+    chat.href = "online-chat.html";
+    chat.textContent = "Continue to Chat";
+
     var ok = document.createElement("button");
     ok.type = "button";
-    ok.className = "btn btn--block";
-    ok.textContent = "OK";
+    ok.className = "btn btn--ghost btn--block modal-stay";
+    ok.textContent = "Stay on this page";
 
     box.appendChild(icon);
     box.appendChild(h);
     box.appendChild(p);
+    box.appendChild(chat);
     box.appendChild(ok);
     back.appendChild(box);
 
@@ -235,7 +242,14 @@
       if (e.target === back) close();
     });
 
-    return { backdrop: back, close: close };
+    return {
+      backdrop: back,
+      close: close,
+      setRef: function (id) {
+        /* carry the complaint ID into the chat page */
+        chat.href = "online-chat.html" + (id ? "?ref=" + encodeURIComponent(id) : "");
+      }
+    };
   }
 
   var modal = buildModal();
@@ -245,7 +259,8 @@
     if (e.key === "Escape" && modal.backdrop.classList.contains("is-open")) modal.close();
   });
 
-  function openModal() {
+  function openModal(refId) {
+    if (modal.setRef) modal.setRef(refId);
     modal.backdrop.classList.add("is-open");
   }
 
@@ -673,7 +688,7 @@
 
           form.reset();
           hidePreview(form);
-          openModal();
+          openModal(record.id);
 
           if (!saved) {
             console.warn("Complaint was not saved - storage may be full.");

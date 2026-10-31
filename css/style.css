@@ -420,6 +420,10 @@ body.is-menu-open .menu-btn {
   margin-bottom: 20px;
 }
 
+/* Success popup actions: continue in the chat, or stay on the page */
+.modal .modal-chat { margin-top: 24px; }
+.modal .modal-stay { margin-top: 10px; }
+
 /* Complaint pages: the page heading now lives inside the card,
    centered, with breathing room and a soft divider. */
 .panel-title--center {
