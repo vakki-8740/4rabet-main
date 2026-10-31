@@ -420,6 +420,18 @@ body.is-menu-open .menu-btn {
   margin-bottom: 20px;
 }
 
+/* Complaint pages: the page heading now lives inside the card,
+   centered, with breathing room and a soft divider. */
+.panel-title--center {
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -.2px;
+  margin: 2px 0 26px;
+  padding-bottom: 18px;
+  border-bottom: 1px solid var(--line);
+}
+
 /* ========== FORM ========== */
 
 .form { display: flex; flex-direction: column; gap: 16px; }
@@ -1514,6 +1526,7 @@ body.is-splash { overflow: hidden; }
   .page { padding: 34px 16px 56px; }
   .page-title { font-size: 25px; }
   .panel { padding: 20px 18px; }
+  .panel-title--center { font-size: 21px; margin-bottom: 22px; padding-bottom: 16px; }
   .logo-img { height: 34px; }
   .options { padding: 40px 16px 56px; }
   .options-title { font-size: 23px; margin-bottom: 28px; }
