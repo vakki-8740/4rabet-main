@@ -19,7 +19,7 @@
 
   <div class="adm-desktop-note">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>
-    Admin Panel mobile ke liye design kiya gaya hai &mdash; best result ke liye phone par kholein.
+    The admin panel is designed for mobile &mdash; open it on your phone for the best experience.
   </div>
 
   <!-- ================= HEADER (menu left) ================= -->
@@ -30,16 +30,28 @@
         <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="menuDrop">
           <span></span><span></span><span></span>
         </button>
-        <nav class="menu-drop" id="menuDrop">
-          <a class="menu-item" href="index.html">Home</a>
-          <a class="menu-item" href="chat.html">Chats</a>
-          <a class="menu-item" href="settings.html">Settings</a>
-          <a class="menu-item" href="../index.html">User Panel</a>
-          <a class="menu-item" href="#" data-install style="display:none">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
-            Install App
-          </a>
-          <a class="menu-item" href="#" id="logoutItem">Logout</a>
+        <nav class="menu-drop" id="menuDrop" aria-label="Admin menu">
+          <div class="menu-head">
+            <img class="menu-logo" src="FAVICON/admin-logo-photo_2026-10-01_23-26-57.jpg" alt="4R-ADMIN">
+            <button type="button" class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+          </div>
+
+          <div class="menu-list">
+            <a class="menu-item" href="index.html">Home</a>
+            <a class="menu-item" href="chat.html">Chats</a>
+            <a class="menu-item" href="settings.html">Settings</a>
+            <a class="menu-item" href="../index.html">User Panel</a>
+            <a class="menu-item" href="#" data-install style="display:none">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+              Install App
+            </a>
+            <a class="menu-item" href="#" id="logoutItem">Logout</a>
+          </div>
+
+          <div class="menu-foot">
+            <strong>4R BET Admin Panel</strong><br>
+            Complaints, live chat and settings in one place.
+          </div>
         </nav>
       </div>
 
@@ -85,7 +97,7 @@
     <section class="adm-box" style="margin-bottom:14px">
       <div class="adm-box-head">
         <h2>Status</h2>
-        <span>User panel me bhi dikhega</span>
+        <span>Also visible in the user panel</span>
       </div>
       <div class="adm-statusbtn-wrap">
         <button type="button" class="btn adm-status-btn" id="statusBtn">
@@ -107,7 +119,7 @@
 
     <!-- ---------- DELETE ---------- -->
     <section class="adm-box adm-danger">
-      <div class="adm-note">Complaint delete karne se wo user ke mailbox se bhi hat jayegi.</div>
+      <div class="adm-note">Deleting a complaint also removes it from the user's Mailbox.</div>
       <div class="adm-form">
         <button type="button" class="btn btn--block" id="delBtn">Delete This Complaint</button>
       </div>
@@ -146,7 +158,7 @@
 
       if (!id) { showMissing(); return; }
 
-      /* Cache me hai to turant dikha do */
+      /* show it right away when it is in the cache */
       var cached = A.findById(id);
       if (cached) { showBody(); draw(cached); }
       else showLoading();
@@ -176,7 +188,7 @@
         loadingEl.style.display = "block";
         bodyEl.style.display = "none";
         document.getElementById("dLoadIco").innerHTML = A.ICON.warn;
-        document.getElementById("dLoadTitle").textContent = "Complaint nahi mili";
+        document.getElementById("dLoadTitle").textContent = "Complaint not found";
         document.getElementById("dLoadText").textContent =
           "Ye complaint delete ho chuki hai ya link galat hai.";
         document.getElementById("dLoadBtn").style.display = "inline-flex";
@@ -214,7 +226,7 @@
       var actsHtml = A.actsHtml(rec);
 
       if (!actsHtml) {
-        acts.innerHTML = '<p class="adm-none">Is complaint me password aur image kuch nahi hai.</p>';
+        acts.innerHTML = '<p class="adm-none">This complaint has no password or image.</p>';
       } else {
         acts.innerHTML = actsHtml;
 
@@ -241,7 +253,7 @@
         });
       }
       } catch (err) {
-        /* kuch bhi render fail ho to user ko khali card na dikhe */
+        /* so a render failure never leaves a blank card */
         var box = document.getElementById("dRows");
         if (box) {
           box.innerHTML = '<div class="adm-row">' +
@@ -267,7 +279,7 @@
                 paintStatus();
                 A.toast("Update Successful");
               } else {
-                A.toast("Update nahi hua \u2014 " + (A.cloudError() || "storage full"), true);
+                A.toast("Update failed \u2014 " + (A.cloudError() || "storage is full"), true);
               }
             });
           }
@@ -276,10 +288,10 @@
 
       document.getElementById("delBtn").addEventListener("click", function () {
         if (!rec) return;
-        if (!window.confirm("Ye complaint permanently delete karein?")) return;
+        if (!window.confirm("Delete this complaint permanently?")) return;
         A.removeById(rec.id).then(function (ok) {
           if (ok) window.location.href = "index.html";
-          else A.toast("Delete nahi hua \u2014 " + (A.cloudError() || "storage full"), true);
+          else A.toast("Delete failed \u2014 " + (A.cloudError() || "storage is full"), true);
         });
       });
     });

@@ -15,7 +15,7 @@ export default function Home() {
       <main className="adm">
         <div className="adm-head">
           <h1>Admin Home</h1>
-          <p>Saari complaints yahan dekhein aur status update karein.</p>
+          <p>See every complaint here and update its status.</p>
         </div>
 
         <section className="adm-stats">
@@ -48,8 +48,8 @@ export default function Home() {
                 <div className="adm-empty-ico">
                   <IconInbox size={26} />
                 </div>
-                <h3>Koi complaint nahi mili</h3>
-                <p>Jab user complaint bhejega wo yahan dikhegi.</p>
+                <h3>No complaints yet</h3>
+                <p>Complaints submitted by users will appear here.</p>
                 <a className="btn" href="../index.html">Open User Panel</a>
               </div>
             ) : (

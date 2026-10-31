@@ -2,12 +2,12 @@
    4R BET  |  Firebase Configuration
    Project: rabet-60dae
    --------------------------------------------------------------
-   Ye project ka SIRF ek hi file hai jahan Firebase keys hain.
-   Naya Firebase project lena ho to bas yahan values badal do -
-   user panel aur admin panel dono automatically naye project
-   par chale jayenge.
+   This is the ONLY file in the project that holds the Firebase
+   keys. To move to another Firebase project, change the values
+   here - the user panel and the admin panel both switch over
+   automatically.
 
-   Setup steps (kya-kya enable karna hai): FIREBASE-SETUP.md
+   Setup steps (what to enable): FIREBASE-SETUP.md
    ========================================== */
 
 window.FIREBASE_CONFIG = {
@@ -19,6 +19,6 @@ window.FIREBASE_CONFIG = {
   appId:             "1:507442462353:web:9f8398e8dd6a5d02dc4930"
 };
 
-/* Firestore collections (names same as the old project) */
+/* Firestore collections (same names as before) */
 window.FIREBASE_COLLECTION      = "complaints";
 window.FIREBASE_CHAT_COLLECTION = "chats";

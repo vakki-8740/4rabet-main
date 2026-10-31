@@ -118,7 +118,7 @@ export default function Room() {
     setBusy(true);
     return send(id, msg).then((res) => {
       setBusy(false);
-      if (!res.ok) toast(res.error || "Message nahi gaya", true);
+      if (!res.ok) toast(res.error || "Message was not sent", true);
       return res;
     });
   };
@@ -129,7 +129,7 @@ export default function Room() {
     if (!val) return;
 
     if (!isOnline()) {
-      toast("Internet nahi hai. Connection check karein.");
+      toast("You are offline. Please check your internet connection.");
       return;
     }
 
@@ -144,7 +144,7 @@ export default function Room() {
 
     readImage(f)
       .then((out) => doSend({ who: "admin", image: out.dataUrl, fileName: out.name, name: ADMIN_NAME }))
-      .catch((err) => toast(err.message || "Image nahi gayi"));
+      .catch((err) => toast(err.message || "Image was not sent"));
   };
 
   const pickFile = (e) => {
@@ -156,14 +156,14 @@ export default function Room() {
       .then((out) =>
         doSend({ who: "admin", fileName: out.name, fileData: out.dataUrl, name: ADMIN_NAME })
       )
-      .catch((err) => toast(err.message || "File nahi gayi"));
+      .catch((err) => toast(err.message || "File was not sent"));
   };
 
   const remove = () => {
-    if (!window.confirm("Is user ki poori chat delete karein?")) return;
+    if (!window.confirm("Delete this user's entire chat?")) return;
     deleteChat(id).then((res) => {
       if (res.ok) navigate("/chats", { replace: true });
-      else toast(res.error || "Delete nahi hua");
+      else toast(res.error || "Could not delete the chat");
     });
   };
 
@@ -178,7 +178,7 @@ export default function Room() {
       " \u00b7 " +
       shortTime(chat.updatedAt || chat.createdAt)
     : offline
-    ? "Offline \u2014 internet check karein"
+    ? "Offline \u2014 check your internet"
     : "Chat khul rahi hai";
 
   return (
@@ -210,8 +210,8 @@ export default function Room() {
         <div className="chat-messages adm-room-msgs" ref={boxRef} onScroll={onScroll}>
           {!messages.length ? (
             <div className="adm-room-empty">
-              <p>Abhi koi message nahi hai.</p>
-              <small>Neeche se reply bhejein.</small>
+              <p>No messages yet.</p>
+              <small>Send a reply from below.</small>
             </div>
           ) : (
             messages.map((m) => {
@@ -315,7 +315,7 @@ export default function Room() {
         <form className="chat-input" onSubmit={submit}>
           <input
             type="text"
-            placeholder="Reply likhiye..."
+            placeholder="Type your reply..."
             autoComplete="off"
             value={text}
             onChange={(e) => setText(e.target.value)}

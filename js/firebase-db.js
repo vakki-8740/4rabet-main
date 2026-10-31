@@ -232,7 +232,7 @@ window.FourR = (function () {
   }
 
   /* ==========================================
-     READ  : saari complaints (newest first)
+     READ  : all complaints (newest first)
      ========================================== */
 
   function listComplaints() {

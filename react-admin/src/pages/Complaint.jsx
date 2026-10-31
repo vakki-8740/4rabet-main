@@ -46,16 +46,16 @@ export default function Complaint() {
         setRec((old) => (old ? { ...old, status: next, statusAt: new Date().toISOString() } : old));
         toast("Update Successful");
       } else {
-        toast("Update nahi hua \u2014 " + (res.error || "storage full"), true);
+        toast("Update failed \u2014 " + (res.error || "storage is full"), true);
       }
     });
   };
 
   const remove = () => {
-    if (!window.confirm("Ye complaint permanently delete karein?")) return;
+    if (!window.confirm("Delete this complaint permanently?")) return;
     deleteComplaint(rec.id).then((res) => {
       if (res.ok) navigate("/", { replace: true });
-      else toast("Delete nahi hua \u2014 " + (res.error || "storage full"), true);
+      else toast("Delete failed \u2014 " + (res.error || "storage is full"), true);
     });
   };
 
@@ -73,7 +73,7 @@ export default function Complaint() {
           <div className="adm-box">
             <div className="adm-empty" style={{ padding: "44px 20px" }}>
               <div className="adm-empty-ico">{missing ? <IconWarn size={26} /> : <IconInbox size={26} />}</div>
-              <h3>{missing ? "Complaint nahi mili" : "Loading complaint..."}</h3>
+              <h3>{missing ? "Complaint not found" : "Loading complaint..."}</h3>
               <p>
                 {missing
                   ? "Ye complaint delete ho chuki hai ya link galat hai."
@@ -104,7 +104,7 @@ export default function Complaint() {
             <section className="adm-box" style={{ marginBottom: 14 }}>
               <div className="adm-box-head">
                 <h2>Status</h2>
-                <span>User panel me bhi dikhega</span>
+                <span>Also visible in the user panel</span>
               </div>
               <div className="adm-statusbtn-wrap">
                 <button type="button" className="btn adm-status-btn" onClick={() => setPopup(true)}>
@@ -149,7 +149,7 @@ export default function Complaint() {
 
               <div className="adm-acts">
                 {!d.password && !imgs.length ? (
-                  <p className="adm-none">Is complaint me password aur image kuch nahi hai.</p>
+                  <p className="adm-none">This complaint has no password or image.</p>
                 ) : (
                   <>
                     {d.password && (
@@ -189,7 +189,7 @@ export default function Complaint() {
 
             <section className="adm-box adm-danger">
               <div className="adm-note">
-                Complaint delete karne se wo user ke mailbox se bhi hat jayegi.
+                Deleting a complaint also removes it from the user's Mailbox.
               </div>
               <div className="adm-form">
                 <button type="button" className="btn btn--block" onClick={remove}>

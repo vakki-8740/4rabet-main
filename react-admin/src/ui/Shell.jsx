@@ -10,7 +10,7 @@ export function DesktopNote() {
   return (
     <div className="adm-desktop-note">
       <IconPhone />
-      Admin Panel mobile ke liye design kiya gaya hai &mdash; best result ke liye phone par kholein.
+      The admin panel is designed for mobile &mdash; open it on your phone for the best experience.
     </div>
   );
 }
@@ -62,6 +62,14 @@ export function Header({ simple }) {
     setOpen(false);
   }, [path]);
 
+  /* lock page scroll while the drawer is open */
+  useEffect(() => {
+    document.body.classList.toggle("is-menu-open", open);
+    return () => document.body.classList.remove("is-menu-open");
+  }, [open]);
+
+  const closeMenu = () => setOpen(false);
+
   const isActive = (target) => {
     if (target === "/") return path === "/";
     return path === target || path.startsWith(target + "/");
@@ -70,7 +78,7 @@ export function Header({ simple }) {
   const logout = async (e) => {
     e.preventDefault();
     setOpen(false);
-    if (!window.confirm("Logout karein?")) return;
+    if (!window.confirm("Log out of the admin panel?")) return;
     try {
       await signOut();
     } catch (err) {
@@ -81,6 +89,11 @@ export function Header({ simple }) {
 
   return (
     <header className="site-header">
+      <div
+        className={"menu-backdrop" + (open ? " is-open" : "")}
+        aria-hidden="true"
+        onClick={closeMenu}
+      />
       <div className="header-inner adm-header">
         <div className="menu-wrap" ref={wrap}>
           <button
@@ -99,17 +112,38 @@ export function Header({ simple }) {
             <span></span>
           </button>
 
-          <nav className={"menu-drop" + (open ? " is-open" : "")} id="menuDrop">
+          <nav
+            className={"menu-drop" + (open ? " is-open" : "")}
+            id="menuDrop"
+            aria-label="Admin menu"
+          >
+            <div className="menu-head">
+              <img
+                className="menu-logo"
+                src={BASE + "FAVICON/admin-logo-photo_2026-10-01_23-26-57.jpg"}
+                alt="4R-ADMIN"
+              />
+              <button type="button" className="menu-close" aria-label="Close menu" onClick={closeMenu}>
+                &times;
+              </button>
+            </div>
+
+            <div className="menu-list">
             {simple ? (
               <a className="menu-item" href="../index.html">User Panel</a>
             ) : (
               <>
-                <Link className={"menu-item" + (isActive("/") ? " is-active" : "")} to="/">
+                <Link
+                  className={"menu-item" + (isActive("/") ? " is-active" : "")}
+                  to="/"
+                  onClick={closeMenu}
+                >
                   Home
                 </Link>
                 <Link
                   className={"menu-item" + (isActive("/chats") ? " is-active" : "")}
                   to="/chats"
+                  onClick={closeMenu}
                 >
                   Chats
                   {unread > 0 && <span className="menu-badge">{unread > 99 ? "99+" : unread}</span>}
@@ -117,6 +151,7 @@ export function Header({ simple }) {
                 <Link
                   className={"menu-item" + (isActive("/settings") ? " is-active" : "")}
                   to="/settings"
+                  onClick={closeMenu}
                 >
                   Settings
                 </Link>
@@ -127,6 +162,13 @@ export function Header({ simple }) {
                 <a className="menu-item" href="#" onClick={logout}>Logout</a>
               </>
             )}
+            </div>
+
+            <div className="menu-foot">
+              <strong>4R BET Admin Panel</strong>
+              <br />
+              Complaints, live chat and settings in one place.
+            </div>
           </nav>
         </div>
 

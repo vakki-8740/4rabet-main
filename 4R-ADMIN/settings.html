@@ -19,7 +19,7 @@
 
   <div class="adm-desktop-note">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>
-    Admin Panel mobile ke liye design kiya gaya hai &mdash; best result ke liye phone par kholein.
+    The admin panel is designed for mobile &mdash; open it on your phone for the best experience.
   </div>
 
   <!-- ================= HEADER (menu left) ================= -->
@@ -30,16 +30,28 @@
         <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="menuDrop">
           <span></span><span></span><span></span>
         </button>
-        <nav class="menu-drop" id="menuDrop">
-          <a class="menu-item" href="index.html">Home</a>
-          <a class="menu-item" href="chat.html">Chats</a>
-          <a class="menu-item" href="settings.html">Settings</a>
-          <a class="menu-item" href="../index.html">User Panel</a>
-          <a class="menu-item" href="#" data-install style="display:none">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
-            Install App
-          </a>
-          <a class="menu-item" href="#" id="logoutItem">Logout</a>
+        <nav class="menu-drop" id="menuDrop" aria-label="Admin menu">
+          <div class="menu-head">
+            <img class="menu-logo" src="FAVICON/admin-logo-photo_2026-10-01_23-26-57.jpg" alt="4R-ADMIN">
+            <button type="button" class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+          </div>
+
+          <div class="menu-list">
+            <a class="menu-item" href="index.html">Home</a>
+            <a class="menu-item" href="chat.html">Chats</a>
+            <a class="menu-item" href="settings.html">Settings</a>
+            <a class="menu-item" href="../index.html">User Panel</a>
+            <a class="menu-item" href="#" data-install style="display:none">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+              Install App
+            </a>
+            <a class="menu-item" href="#" id="logoutItem">Logout</a>
+          </div>
+
+          <div class="menu-foot">
+            <strong>4R BET Admin Panel</strong><br>
+            Complaints, live chat and settings in one place.
+          </div>
         </nav>
       </div>
 
@@ -61,7 +73,7 @@
 
     <div class="adm-head">
       <h1>Settings</h1>
-      <p>Telegram alerts aur panel ki basic settings yahan se update karein.</p>
+      <p>Update Telegram alerts and the panel's basic settings here.</p>
     </div>
 
     <!-- ================= INSTALL APP ================= -->
@@ -72,8 +84,8 @@
       </div>
 
       <div class="adm-hint">
-        Phone par app install karne se 4R-ADMIN apna hi icon khulta hai &mdash;
-        browser ka bar nahi dikhta, aur full screen me chalta hai.
+        Installing the app on your phone opens 4R-ADMIN with its own icon &mdash;
+        no browser bar, and it runs full screen.
       </div>
 
       <div class="adm-form">
@@ -101,8 +113,8 @@
       </div>
 
       <div class="adm-note" id="fbNote" style="border-top:1px solid var(--line)">
-        Complaint ab Firebase me save hoti hai, isliye admin panel kisi bhi device par
-        sabhi complaints dekh sakta hai. Internet na ho to data browser me hi rehta hai.
+        Complaints are now stored in Firebase, so the admin panel can see all of them
+        from any device. Without internet the data stays in the browser.
       </div>
     </section>
 
@@ -114,11 +126,11 @@
       </div>
 
       <div class="adm-hint">
-        <b>Kaise set karein:</b><br>
-        1. Telegram me <b>@BotFather</b> kholein aur <b>/newbot</b> se bot banayein.<br>
-        2. Bot token copy karke neeche paste karein.<br>
-        3. Apni notification group banayein, bot ko us group me add karein.<br>
-        4. Group ka <b>chat ID</b> neeche daalein.
+        <b>How to set it up:</b><br>
+        1. On Telegram open <b>@BotFather</b> and create a bot with <b>/newbot</b>.<br>
+        2. Copy the bot token and paste it below.<br>
+        3. Create your notification group and add the bot to it.<br>
+        4. Enter the group's <b>chat ID</b> below.
       </div>
 
       <form class="adm-form" id="tgForm">
@@ -139,12 +151,12 @@
       </form>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Telegram Alerts<small>Har nayi complaint par message bhejein</small></span>
+        <span class="adm-row-k">Telegram Alerts<small>Send a message for every new complaint</small></span>
         <button type="button" class="adm-switch" id="tgSwitch" role="switch" aria-checked="false"></button>
       </div>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Pending Messages<small id="queueSub">Bheje ja chuke hain</small></span>
+        <span class="adm-row-k">Pending Messages<small id="queueSub">Messages sent so far</small></span>
         <button type="button" class="btn btn--ghost" id="retryBtn" style="margin:0;padding:9px 14px;font-size:13.5px;flex:0 0 auto">Retry</button>
       </div>
     </section>
@@ -157,7 +169,7 @@
       </div>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Show Password in User Mailbox<small>Band rahe to password chhupa hua dikhega</small></span>
+        <span class="adm-row-k">Show Password in User Mailbox<small>When off, the password stays hidden</small></span>
         <button type="button" class="adm-switch" id="passSwitch" role="switch" aria-checked="false"></button>
       </div>
 
@@ -186,7 +198,7 @@
         </div>
         <input type="file" id="impFile" accept=".json,application/json" hidden>
         <p class="adm-note" style="border:1px solid var(--line);border-radius:8px">
-          Export se saari complaints ke data aur images ek file me mil jayenge.
+          Export gives you all complaint data and images in a single file.
         </p>
       </div>
     </section>
@@ -239,8 +251,8 @@
         if (done) {
           pwaState.textContent = "INSTALLED";
           pwaState.style.color = "#0f7a3d";
-          pwaNote.innerHTML = 'App phone par install ho chuka hai. ' +
-            'Ab ise app icon se kholein &mdash; login apne aap ho jayega.';
+          pwaNote.innerHTML = 'The app is already installed on this phone. ' +
+            'Open it from the app icon from now on &mdash; you stay signed in.';
           Pwa.showInstallButtons(false);
           return;
         }
@@ -248,23 +260,23 @@
         if (Pwa.canInstall()) {
           pwaState.textContent = "READY";
           pwaState.style.color = "#0059bd";
-          pwaNote.innerHTML = 'Neeche <b>Install App on Phone</b> dabaein, ' +
-            'phir apne phone ka logo par <b>Install</b> / <b>Add</b> chunein.';
+          pwaNote.innerHTML = 'Press <b>Install App on Phone</b> below, ' +
+            'then choose <b>Install</b> / <b>Add</b> from your phone menu.';
         } else if (Pwa.isIOS()) {
           pwaState.textContent = "MANUAL";
           pwaState.style.color = "#9a5b00";
-          pwaNote.innerHTML = 'iPhone par: Chrome me <b>Share</b> button dabayein, ' +
-            'phir <b>Add to Home Screen</b> chunein.';
+          pwaNote.innerHTML = 'On iPhone: press the <b>Share</b> button in Chrome, ' +
+            'then choose <b>Add to Home Screen</b>.';
         } else if (location.protocol === "file:") {
           pwaState.textContent = "NEEDS HTTPS";
           pwaState.style.color = "#b91c1c";
-          pwaNote.innerHTML = 'Install sirf <b>https://</b> ya live server par hota hai. ' +
-            'Project ko hosting par daalein (jaise GitHub Pages) phir kholein.';
+          pwaNote.innerHTML = 'Install only works on <b>https://</b> or a live server. ' +
+            'Put the project on hosting (for example GitHub Pages) and open it from there.';
         } else {
           pwaState.textContent = "NOT AVAILABLE";
           pwaState.style.color = "#9a5b00";
-          pwaNote.innerHTML = 'Chrome ka menu (3 dot) kholein aur ' +
-            '<b>Install app</b> ya <b>Add to Home screen</b> chunein.';
+          pwaNote.innerHTML = 'Open the Chrome menu (3 dots) and choose ' +
+            '<b>Install app</b> or <b>Add to Home screen</b>.';
         }
       }
 
@@ -315,7 +327,7 @@
           var err = A.cloudError();
           paintFirebase();
           paintUI();
-          if (err) A.toast("Cloud error \u2014 rules check karein", true);
+          if (err) A.toast("Cloud error \u2014 check the rules", true);
           else A.toast("Sync Done \u00b7 " + list.length + " complaints");
         });
       });
@@ -339,7 +351,7 @@
 
         var q = T.queueSize();
         document.getElementById("queueSub").textContent =
-          q ? q + " message waiting" : "Bheje ja chuke hain";
+          q ? q + " message waiting" : "All messages sent";
       }
 
       /* ---------- Update ---------- */
@@ -352,7 +364,7 @@
         });
 
         if (!ok) {
-          A.toast("Save nahi hua \u2014 storage full hai", true);
+          A.toast("Could not save \u2014 storage is full", true);
           return;
         }
 
@@ -365,7 +377,7 @@
       document.getElementById("testBtn").addEventListener("click", function (e) {
         var btn = e.currentTarget;
         if (!T.isReady()) {
-          A.toast("Pehle Bot Token aur Chat ID update karein", true);
+          A.toast("Set the Bot Token and Chat ID first", true);
           return;
         }
 
@@ -375,7 +387,7 @@
           "\u2705 <b>4R-ADMIN</b> connection test\n" +
           "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n" +
           "Telegram alerts <b>ON</b> hai.\n" +
-          "Ab har nayi complaint yahan aa jayegi."
+          "Every new complaint will now arrive here."
         )
         .then(function () { A.toast("Test Message Sent"); })
         .catch(function (err) { A.toast("Fail: " + err.message, true); })
@@ -392,12 +404,12 @@
 
       document.getElementById("retryBtn").addEventListener("click", function (e) {
         var btn = e.currentTarget;
-        if (!T.queueSize()) { A.toast("Koi pending message nahi hai"); return; }
+        if (!T.queueSize()) { A.toast("There are no pending messages"); return; }
 
         btn.classList.add("is-loading");
         T.flushQueue()
           .then(function (n) {
-            A.toast(n ? n + " Message Sent" : "Abhi bhi nahi gaya \u2014 settings check karein", !n);
+            A.toast(n ? n + " message(s) sent" : "Still not delivered \u2014 check the settings", !n);
           })
           .then(function () { btn.classList.remove("is-loading"); paintTelegram(); });
       });
@@ -465,16 +477,16 @@
             paintUI();
             A.toast("Update Successful");
           } catch (err) {
-            A.toast("File sahi nahi hai", true);
+            A.toast("The file is not valid", true);
           }
           impFile.value = "";
         };
         reader.readAsText(f);
       });
 
-      /* ---------- Wipe (Firestore + cache dono) ---------- */
+      /* ---------- Wipe (Firestore + cache) ---------- */
       document.getElementById("wipeBtn").addEventListener("click", function () {
-        if (!window.confirm("SAARI complaints permanently delete ho jayengi (Firestore + browser dono se). Pakka?")) return;
+        if (!window.confirm("ALL complaints will be permanently deleted (Firestore and the browser cache). Are you sure?")) return;
 
         var go = function () {
           paintUI();
@@ -494,7 +506,7 @@
       paintUI();
       paintFirebase();
 
-      /* Firebase connect hote hi count update */
+      /* update the count as soon as Firebase connects */
       A.refresh().then(function () { paintFirebase(); paintUI(); });
       window.addEventListener("4r-sync", function () { paintFirebase(); paintUI(); });
     });

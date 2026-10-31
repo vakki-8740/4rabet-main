@@ -1,6 +1,6 @@
-/* login page layout (4R-ADMIN/login.html se liya gaya) */
+/* login page layout (taken from 4R-ADMIN/login.html) */
 
-    /* login page ka apna layout */
+    /* the login page has its own layout */
     .adm-login {
       min-height: 100vh;
       display: flex;

@@ -3,7 +3,7 @@
    4R BET  |  Firestore data migrate / backup tool
    ----------------------------------------------------------
    Purane Firebase project ka data naye project me copy karta hai.
-   Copy hone par purana data delete NAHI hota.
+   The old data is NOT deleted after copying.
 
    Data:
      complaints
@@ -11,7 +11,7 @@
 
    Usage (Termux / Node 18+):
 
-     # sirf backup (JSON file me save)
+     # backup only (saved to a JSON file)
      node tools/migrate-firestore.js \
        --old-key=OLD_API_KEY --new-key=NEW_API_KEY \
        --dump=backup-4rbet.json
@@ -26,8 +26,8 @@
      2) Ya admin ka Firebase ID token do:
         --old-token=eyJhbGciOi...
 
-   Naye project me likhne ke liye wahan firestore.rules publish hona
-   chahiye (complaints/chats me create allowed hai).
+   Writing to the new project requires the firestore.rules there to be
+   published (create is allowed on complaints/chats).
    ========================================================== */
 
 "use strict";
@@ -43,7 +43,7 @@ const args = {};
 argv.forEach((a) => {
   const m = /^--([^=]+)=(.*)$/.exec(a);
   if (!m) return;
-  /* --old-project  aur  --oldProject  dono chalein */
+  /* both --old-project and --oldProject work */
   const key = m[1].replace(/-([a-z])/g, function (_, c) { return c.toUpperCase(); });
   args[key] = m[2];
 });
@@ -65,8 +65,8 @@ if (!OLD_KEY || !NEW_KEY) {
     "  --old-project=  (default rbet-6770a - old project with the existing data)\n" +
     "  --new-project=  (default rabet-60dae)\n" +
     "  --old-token=    purane project ke admin ka Firebase ID token (optional)\n" +
-    "  --dump=FILE     saara data JSON backup me bhi save karo\n" +
-    "  --dry-run       sirf gino, kuch bhi naye project me na likho\n"
+    "  --dump=FILE     also save all data to a JSON backup\n" +
+    "  --dry-run       only count, write nothing to the new project\n"
   );
   process.exit(1);
 }
@@ -200,7 +200,7 @@ function writeTxt(file) {
   L.push("");
 
   if (!complaints.length) {
-    L.push("  (koi complaint nahi)");
+    L.push("  (no complaints)");
     L.push("");
   }
 
@@ -237,7 +237,7 @@ function writeTxt(file) {
   L.push("");
 
   if (!chats.length) {
-    L.push("  (koi chat nahi)");
+    L.push("  (no chats)");
     L.push("");
   }
 
@@ -331,10 +331,10 @@ async function copyCollection(colPath, opts) {
 
   if (TXT) writeTxt(TXT);
 
-  console.log("\nDone. Purane project ka data waise hi safe hai (kuch delete nahi hua).");
+  console.log("\nDone. The old project data is untouched (nothing was deleted).");
 })().catch((err) => {
   console.error("\nFAILED: " + err.message);
   console.error("\nAgar READ permission denied aaya hai to purane project ki Firestore Rules me");
-  console.error("temporarily `allow read: if true;` karke dobara chalayein (baad me wapas revert karein).");
+  console.error("set `allow read: if true;` temporarily and run it again (revert it afterwards).");
   process.exit(1);
 });

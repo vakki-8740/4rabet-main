@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <!-- Chat room full-screen: sirf messages scroll hote hain -->
+  <!-- Chat room full-screen: only the messages scroll -->
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <title>Chat &mdash; 4R-ADMIN</title>
   <link rel="icon" type="image/jpeg" href="FAVICON/admin-logo-photo_2026-10-01_23-26-57.jpg">
@@ -20,7 +20,7 @@
 
   <div class="adm-desktop-note">
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"></rect><path d="M11 18h2"></path></svg>
-    Admin Panel mobile ke liye design kiya gaya hai &mdash; best result ke liye phone par kholein.
+    The admin panel is designed for mobile &mdash; open it on your phone for the best experience.
   </div>
 
   <!-- ================= HEADER (menu left) ================= -->
@@ -31,16 +31,28 @@
         <button type="button" class="menu-btn" id="menuBtn" aria-label="Open menu" aria-expanded="false" aria-controls="menuDrop">
           <span></span><span></span><span></span>
         </button>
-        <nav class="menu-drop" id="menuDrop">
-          <a class="menu-item" href="index.html">Home</a>
-          <a class="menu-item" href="chat.html">Chats</a>
-          <a class="menu-item" href="settings.html">Settings</a>
-          <a class="menu-item" href="../index.html">User Panel</a>
-          <a class="menu-item" href="#" data-install style="display:none">
-            <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
-            Install App
-          </a>
-          <a class="menu-item" href="#" id="logoutItem">Logout</a>
+        <nav class="menu-drop" id="menuDrop" aria-label="Admin menu">
+          <div class="menu-head">
+            <img class="menu-logo" src="FAVICON/admin-logo-photo_2026-10-01_23-26-57.jpg" alt="4R-ADMIN">
+            <button type="button" class="menu-close" id="menuClose" aria-label="Close menu">&times;</button>
+          </div>
+
+          <div class="menu-list">
+            <a class="menu-item" href="index.html">Home</a>
+            <a class="menu-item" href="chat.html">Chats</a>
+            <a class="menu-item" href="settings.html">Settings</a>
+            <a class="menu-item" href="../index.html">User Panel</a>
+            <a class="menu-item" href="#" data-install style="display:none">
+              <svg viewBox="0 0 24 24" width="17" height="17" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="M7 10l5 5 5-5"></path><path d="M12 15V3"></path></svg>
+              Install App
+            </a>
+            <a class="menu-item" href="#" id="logoutItem">Logout</a>
+          </div>
+
+          <div class="menu-foot">
+            <strong>4R BET Admin Panel</strong><br>
+            Complaints, live chat and settings in one place.
+          </div>
         </nav>
       </div>
 
@@ -104,7 +116,7 @@
 
     <!-- ---------- INPUT ---------- -->
     <form class="chat-input" id="roomForm">
-      <input type="text" id="roomField" placeholder="Reply likhiye..." autocomplete="off" required>
+      <input type="text" id="roomField" placeholder="Type your reply..." autocomplete="off" required>
       <button type="submit" class="btn btn--send">Send</button>
     </form>
 

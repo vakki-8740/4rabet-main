@@ -34,7 +34,7 @@ export default function Settings() {
         state: "INSTALLED",
         color: "#157a4d",
         note:
-          "App phone par install ho chuka hai. Ab ise app icon se kholein &mdash; login apne aap ho jayega.",
+          "The app is already installed on this phone. Open it from the app icon from now on &mdash; you stay signed in.",
         canInstall: false
       });
       return;
@@ -45,14 +45,14 @@ export default function Settings() {
         state: "READY",
         color: "#4f6bed",
         note:
-          "Neeche <b>Install App on Phone</b> dabaein, phir apne phone ka logo par <b>Install</b> / <b>Add</b> chunein.",
+          "Press <b>Install App on Phone</b> below, then choose <b>Install</b> / <b>Add</b> from your phone menu.",
         canInstall: true
       });
     } else if (P.isIOS()) {
       setPwa({
         state: "MANUAL",
         color: "#c2740a",
-        note: "iPhone par: Chrome me <b>Share</b> button dabayein, phir <b>Add to Home Screen</b> chunein.",
+        note: "On iPhone: press the <b>Share</b> button in Chrome, then choose <b>Add to Home Screen</b>.",
         canInstall: false
       });
     } else if (location.protocol === "file:") {
@@ -60,7 +60,7 @@ export default function Settings() {
         state: "NEEDS HTTPS",
         color: "#e5484d",
         note:
-          "Install sirf <b>https://</b> ya live server par hota hai. Project ko hosting par daalein (jaise GitHub Pages) phir kholein.",
+          "Install only works on <b>https://</b> or a live server. Put the project on hosting (for example GitHub Pages) and open it from there.",
         canInstall: false
       });
     } else {
@@ -68,7 +68,7 @@ export default function Settings() {
         state: "NOT AVAILABLE",
         color: "#c2740a",
         note:
-          "Chrome ka menu (3 dot) kholein aur <b>Install app</b> ya <b>Add to Home screen</b> chunein.",
+          "Open the Chrome menu (3 dots) and choose <b>Install app</b> or <b>Add to Home screen</b>.",
         canInstall: false
       });
     }
@@ -108,7 +108,7 @@ export default function Settings() {
     const l = await listComplaints();
     paintFirebase(l);
     btn.classList.remove("is-loading");
-    toast(getLastError() ? "Cloud error \u2014 rules check karein" : "Sync Done \u00b7 " + l.length + " complaints", !!getLastError());
+    toast(getLastError() ? "Cloud error \u2014 check the rules" : "Sync done \u00b7 " + l.length + " complaints", !!getLastError());
   };
 
   /* ---------------- Telegram ---------------- */
@@ -139,7 +139,7 @@ export default function Settings() {
     });
 
     if (!ok) {
-      toast("Save nahi hua \u2014 storage full hai", true);
+      toast("Could not save \u2014 storage is full", true);
       return;
     }
 
@@ -152,7 +152,7 @@ export default function Settings() {
     const t = T();
     if (!t) return;
     if (!t.isReady()) {
-      toast("Pehle Bot Token aur Chat ID update karein", true);
+      toast("Set the Bot Token and Chat ID first", true);
       return;
     }
 
@@ -161,7 +161,7 @@ export default function Settings() {
       "\u2705 <b>4R-ADMIN</b> connection test\n" +
         "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n" +
         "Telegram alerts <b>ON</b> hai.\n" +
-        "Ab har nayi complaint yahan aa jayegi."
+        "Every new complaint will now arrive here."
     )
       .then(() => toast("Test Message Sent"))
       .catch((err) => toast("Fail: " + err.message, true))
@@ -181,12 +181,12 @@ export default function Settings() {
     const t = T();
     if (!t) return;
     if (!t.queueSize()) {
-      toast("Koi pending message nahi hai");
+      toast("There are no pending messages");
       return;
     }
     setTestBusy(true);
     t.flushQueue()
-      .then((n) => toast(n ? n + " Message Sent" : "Abhi bhi nahi gaya \u2014 settings check karein", !n))
+      .then((n) => toast(n ? n + " message(s) sent" : "Still not delivered \u2014 check the settings", !n))
       .then(() => {
         setTestBusy(false);
         paintTelegram();
@@ -259,7 +259,7 @@ export default function Settings() {
         refreshCount && refreshCount();
         toast("Update Successful");
       } catch (err) {
-        toast("File sahi nahi hai", true);
+        toast("The file is not valid", true);
       }
       e.target.value = "";
     };
@@ -267,7 +267,7 @@ export default function Settings() {
   };
 
   const wipe = () => {
-    if (!window.confirm("SAARI complaints permanently delete ho jayengi (Firestore + browser dono se). Pakka?")) return;
+    if (!window.confirm("ALL complaints will be permanently deleted (Firestore and the browser cache). Are you sure?")) return;
 
     deleteAll().then(() => {
       refreshCount && refreshCount();
@@ -291,7 +291,7 @@ export default function Settings() {
 
         <div className="adm-head">
           <h1>Settings</h1>
-          <p>Telegram alerts aur panel ki basic settings yahan se update karein.</p>
+          <p>Update Telegram alerts and the panel's basic settings here.</p>
         </div>
 
         {/* INSTALL APP */}
@@ -302,8 +302,8 @@ export default function Settings() {
           </div>
 
           <div className="adm-hint">
-            Phone par app install karne se 4R-ADMIN apna hi icon khulta hai &mdash; browser ka bar
-            nahi dikhta, aur full screen me chalta hai.
+            Installing the app on your phone opens 4R-ADMIN with its own icon &mdash; no browser
+            bar, and it runs full screen.
           </div>
 
           <div className="adm-form">
@@ -370,8 +370,8 @@ export default function Settings() {
               </>
             ) : (
               <>
-                Complaint ab Firebase me save hoti hai, isliye admin panel kisi bhi device par sabhi
-                complaints dekh sakta hai. Internet na ho to data browser me hi rehta hai.
+                Complaints are now stored in Firebase, so the admin panel can see all of them from
+                any device. Without internet the data stays in the browser.
               </>
             )}
           </div>
@@ -385,13 +385,13 @@ export default function Settings() {
           </div>
 
           <div className="adm-hint">
-            <b>Kaise set karein:</b>
+            <b>How to set it up:</b>
             <br />
             1. Telegram me <b>@BotFather</b> kholein aur <b>/newbot</b> se bot banayein.
             <br />
-            2. Bot token copy karke neeche paste karein.
+            2. Copy the bot token and paste it below.
             <br />
-            3. Apni notification group banayein, bot ko us group me add karein.
+            3. Create your notification group and add the bot to it.
             <br />
             4. Group ka <b>chat ID</b> neeche daalein.
           </div>
@@ -441,7 +441,7 @@ export default function Settings() {
           <div className="adm-set-row">
             <span className="adm-row-k">
               Telegram Alerts
-              <small>Har nayi complaint par message bhejein</small>
+              <small>Send a message for every new complaint</small>
             </span>
             <button
               type="button"
@@ -455,7 +455,7 @@ export default function Settings() {
           <div className="adm-set-row">
             <span className="adm-row-k">
               Pending Messages
-              <small>{queue ? queue + " message waiting" : "Bheje ja chuke hain"}</small>
+              <small>{queue ? queue + " message waiting" : "All messages sent"}</small>
             </span>
             <button
               type="button"
@@ -479,7 +479,7 @@ export default function Settings() {
           <div className="adm-set-row">
             <span className="adm-row-k">
               Show Password in User Mailbox
-              <small>Band rahe to password chhupa hua dikhega</small>
+              <small>When off, the password stays hidden</small>
             </span>
             <button
               type="button"
@@ -529,7 +529,7 @@ export default function Settings() {
             </div>
             <input ref={fileRef} type="file" accept=".json,application/json" hidden onChange={importBackup} />
             <p className="adm-note" style={{ border: "1px solid var(--line)", borderRadius: 8 }}>
-              Export se saari complaints ke data aur images ek file me mil jayenge.
+              Export gives you all complaint data and images in a single file.
             </p>
           </div>
         </section>

@@ -1,21 +1,21 @@
 /* ==========================================
    4R-ADMIN  |  pwa.js
-   Phone par app "install" karne ke liye:
-   - Service Worker register
-   - Install button (menu + settings)
+   For installing the app on a phone:
+   - registers the Service Worker
+   - install button (menu + settings)
    ========================================== */
 
 window.FourRPwa = (function () {
   "use strict";
 
-  var deferred = null;   /* browser ne install prompt pakda hua */
+  var deferred = null;   /* install prompt captured by the browser */
   var swReg = null;
 
   /* ---------- Service Worker ---------- */
   function registerSW() {
     if (!("serviceWorker" in navigator)) return Promise.resolve(null);
 
-    /* file:// par service worker nahi chalta - wahan skip */
+    /* service workers do not run on file:// - skip there */
     if (location.protocol === "file:") return Promise.resolve(null);
 
     return navigator.serviceWorker.register("sw.js")
@@ -67,10 +67,10 @@ window.FourRPwa = (function () {
         .catch(function () { return false; });
     }
 
-    /* browser ne prompt nahi diya (Safari/iOS) -> guide do */
+    /* the browser gave no prompt (Safari/iOS) -> show a guide */
     var msg = isIOS()
-      ? "iPhone par: Safari me logo tap karein, phir \"Add to Home Screen\" chunein."
-      : "Chrome menu (3 dot) se \"Add to Home screen\" / \"Install app\" chunein.";
+      ? "On iPhone: tap the share icon in Safari, then choose \"Add to Home Screen\"."
+      : "Open the Chrome menu (3 dots) and choose \"Add to Home screen\" / \"Install app\".";
 
     if (window.AdminPanel) window.AdminPanel.toast(msg, true);
     return Promise.resolve(false);
@@ -82,7 +82,7 @@ window.FourRPwa = (function () {
             window.navigator.maxTouchPoints > 1);
   }
 
-  /* ---------- Buttons wire karo ---------- */
+  /* ---------- Wire up the buttons ---------- */
   function bind(selector) {
     document.querySelectorAll(selector).forEach(function (b) {
       b.addEventListener("click", function (e) {
@@ -95,7 +95,7 @@ window.FourRPwa = (function () {
   function init() {
     registerSW();
 
-    /* already installed hai to button na dikhe */
+    /* hide the button when the app is already installed */
     if (installed()) {
       document.body.setAttribute("data-installed", "1");
       showInstallButtons(false);
@@ -104,7 +104,7 @@ window.FourRPwa = (function () {
 
     bind("[data-install]");
 
-    /* 1.5 sec baad check: kya prompt available hai */
+    /* check after 1.5s: is the prompt available */
     setTimeout(function () {
       if (!canInstall()) showInstallButtons(false);
     }, 1500);

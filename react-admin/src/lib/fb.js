@@ -39,13 +39,13 @@ export function friendly(err) {
   const msg = (err && err.message) || String(err);
 
   if (code === "permission-denied" || /permission/i.test(msg)) {
-    return "Firestore rules me allowed nahi hai (firestore.rules update karein)";
+    return "Not allowed by the Firestore rules (update firestore.rules)";
   }
   if (code === "unavailable" || /network|offline|fetch/i.test(msg)) {
-    return "Internet nahi hai. Connection check karein.";
+    return "You are offline. Please check your internet connection.";
   }
   if (/exceed|too large|1 ?MiB|1048576/i.test(msg)) {
-    return "Document 1MB se bada ho gaya";
+    return "The document went past the 1MB limit";
   }
   return msg;
 }

@@ -18,7 +18,7 @@
   --no:            #e5484d;
   --warn:          #c2740a;
 
-  /* purane variables (pages inhi ko use karte hain) */
+  /* legacy variables (the pages still use these) */
   --blue:          var(--accent);
   --blue-dark:     #3f57c9;
   --black:         #1f2430;
@@ -128,25 +128,34 @@ a { color: var(--accent); }
 .adm-header .menu-btn span { width: 16px; background: var(--text); }
 
 /* menu dropdown - left aligned */
+/* ---------- Left drawer menu (full height, slides in) ---------- */
+
 .adm-header .menu-drop {
-  left: 0;
-  right: auto;
-  min-width: 212px;
-  padding: 6px;
-  border-radius: 10px;
-  border: 1px solid var(--border);
+  width: min(86vw, 320px);
   background: var(--card);
-  box-shadow: 0 16px 40px rgba(16, 24, 40, .14);
+  border-right: 1px solid var(--border);
+  box-shadow: 0 20px 50px rgba(16, 24, 40, .22);
 }
 
-@media (min-width: 720px) {
-  .adm-header .menu-drop { left: max(calc(50vw - 260px + 16px), 16px); }
+.adm-header .menu-head {
+  border-bottom: 1px solid var(--border);
+  background: var(--bg);
+}
+
+.adm-header .menu-list {
+  padding: 10px;
+  gap: 2px;
+}
+
+.adm-header .menu-foot {
+  border-top: 1px solid var(--border);
+  background: var(--card);
 }
 
 .adm-header .menu-item {
-  padding: 10px 12px;
-  border-radius: 7px;
-  font-size: 14px;
+  padding: 12px 12px;
+  border-radius: 8px;
+  font-size: 14.5px;
   font-weight: 500;
   color: var(--text);
 }

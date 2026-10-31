@@ -1,7 +1,7 @@
 /* ==========================================
    4R-ADMIN  |  admin-chat.js
    Chat list + chat room controller.
-   Data Firestore ke "chats" collection se aata hai
+   The data comes from the Firestore "chats" collection
    (../js/chat-db.js).
    ========================================== */
 
@@ -84,7 +84,7 @@ window.AdminChat = (function () {
 
     function card(c) {
       var unread = Number(c.unreadAdmin || 0);
-      var last = c.lastText || "Chat shuru karein";
+      var last = c.lastText || "No messages yet";
       var prefix = c.lastWho === "admin" ? "You: " : "";
 
       return '<button type="button" class="adm-card adm-chat" data-id="' + esc(c.id) + '">' +
@@ -118,8 +118,8 @@ window.AdminChat = (function () {
             '<div class="adm-empty-ico">' +
               '<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4 8.6 8.6 0 0 1-3.6-.8L3 21l1.9-5.2a8.4 8.4 0 0 1-.9-3.8 8.4 8.4 0 0 1 8.5-8.4 8.4 8.4 0 0 1 8.5 7.9Z"></path></svg>' +
             '</div>' +
-            '<h3>Abhi koi chat nahi hai</h3>' +
-            '<p>Jab user Online Chat page se message bhejega, wo yahan dikhega.</p>' +
+            '<h3>No chats yet</h3>' +
+            '<p>When a user sends a message from the Online Chat page it appears here.</p>' +
             '<a class="btn" href="../online-chat.html">Open User Chat</a>' +
           '</div>';
         return;
@@ -163,7 +163,7 @@ window.AdminChat = (function () {
       var chatData = null;
 
     if (!id) {
-      nameEl.textContent = "Chat nahi mili";
+      nameEl.textContent = "Chat not found";
       metaEl.textContent = "List se dobara kholen";
       return;
     }
@@ -293,8 +293,8 @@ window.AdminChat = (function () {
       if (!list.length) {
         box.innerHTML =
           '<div class="adm-room-empty">' +
-            '<p>Abhi koi message nahi hai.</p>' +
-            '<small>Neeche se reply bhejein.</small>' +
+            '<p>No messages yet.</p>' +
+            '<small>Send a reply from below.</small>' +
           '</div>';
         return;
       }
@@ -370,7 +370,7 @@ window.AdminChat = (function () {
       lock(true);
       C.send(id, msg).then(function (res) {
         lock(false);
-        if (!res.ok) toast(res.error || "Message nahi gaya");
+        if (!res.ok) toast(res.error || "Message was not sent");
       });
     }
 
@@ -382,7 +382,7 @@ window.AdminChat = (function () {
         if (!text) return;
 
         if (!C.isOnline()) {
-          toast("Internet nahi hai. Connection check karein.");
+          toast("You are offline. Please check your internet connection.");
           return;
         }
 
@@ -409,7 +409,7 @@ window.AdminChat = (function () {
         C.readImage(f).then(function (out) {
           send({ who: "admin", image: out.dataUrl, fileName: out.name, name: ADMIN_NAME });
         }).catch(function (err) {
-          toast(err.message || "Image nahi gayi");
+          toast(err.message || "Image was not sent");
         });
       });
     }
@@ -423,7 +423,7 @@ window.AdminChat = (function () {
         C.readFile(f).then(function (out) {
           send({ who: "admin", fileName: out.name, fileData: out.dataUrl, name: ADMIN_NAME });
         }).catch(function (err) {
-          toast(err.message || "File nahi gayi");
+          toast(err.message || "File was not sent");
         });
       });
     }
@@ -432,13 +432,13 @@ window.AdminChat = (function () {
 
     if (delBtn) {
       delBtn.addEventListener("click", function () {
-        if (!confirm("Is user ki poori chat delete karein?")) return;
+        if (!confirm("Delete this user's entire chat?")) return;
 
         delBtn.disabled = true;
         C.deleteChat(id).then(function (res) {
           delBtn.disabled = false;
           if (res.ok) location.replace("chat.html");
-          else toast(res.error || "Delete nahi hua");
+          else toast(res.error || "Could not delete the chat");
         });
       });
     }
@@ -447,8 +447,8 @@ window.AdminChat = (function () {
 
     C.getChat(id).then(function (res) {
       if (!res.chat) {
-        nameEl.textContent = "Chat nahi mili";
-        metaEl.textContent = "Delete ho gayi hogi";
+        nameEl.textContent = "Chat not found";
+        metaEl.textContent = "It may have been deleted";
         return;
       }
       chatData = res.chat;
@@ -473,7 +473,7 @@ window.AdminChat = (function () {
 
     C.watchMessages(id, function (list, online) {
       if (!online) {
-        metaEl.textContent = "Offline \u2014 internet check karein";
+        metaEl.textContent = "Offline \u2014 check your internet";
         return;
       }
       render(list);

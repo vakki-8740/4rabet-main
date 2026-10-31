@@ -7,28 +7,28 @@ function friendly(code, msg) {
     case "auth/configuration-not-found":
     case "auth/operation-not-allowed":
       return (
-        "Login abhi band hai. Firebase Console > Authentication > " +
-        'Sign-in method me "Email/Password" ON karke wapas aayein.'
+        "Login is disabled right now. Open Firebase Console > Authentication > " +
+        'Sign-in method, turn ON "Email/Password" and try again.'
       );
     case "auth/user-not-found":
     case "auth/wrong-password":
     case "auth/invalid-credential":
     case "auth/invalid-login-credentials":
-      return "Email ya password galat hai.";
+      return "The email or password is incorrect.";
     case "auth/email-already-in-use":
-      return "Ye email pehle se registered hai. Apna password daalein.";
+      return "This email is already registered. Please enter your password.";
     case "auth/invalid-email":
-      return "Email sahi nahi hai.";
+      return "The email is not valid.";
     case "auth/weak-password":
-      return "Password kam se kam 6 characters ka rakhein.";
+      return "The password must be at least 6 characters long.";
     case "auth/too-many-requests":
-      return "Bahut zyada try kiye gaye. Thodi der baad koshish karein.";
+      return "Too many attempts. Please try again in a little while.";
     case "auth/network-request-failed":
-      return "Internet nahi hai. Connection check karein.";
+      return "You are offline. Please check your internet connection.";
     case "auth/api-key-not-valid":
-      return "Firebase API key sahi nahi hai (firebase-config.js dekhein).";
+      return "The Firebase API key is not valid (check firebase-config.js).";
   }
-  return msg || "Login nahi hua. Dobara koshish karein.";
+  return msg || "Login failed. Please try again.";
 }
 
 function keepSignedIn(A) {

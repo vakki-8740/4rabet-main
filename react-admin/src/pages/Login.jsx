@@ -21,7 +21,7 @@ export default function Login() {
   const [email, setEmail] = useState(ADMIN_EMAIL);
   const [pass, setPass] = useState("");
   const [show, setShow] = useState(false);
-  const [err, setErr] = useState(params.get("err") === "sdk" ? "Firebase load nahi hua. Internet check karein." : "");
+  const [err, setErr] = useState(params.get("err") === "sdk" ? "Firebase did not load. Please check your internet." : "");
   const [busy, setBusy] = useState(false);
   const [hint, setHint] = useState("");
   const [canInstall, setCanInstall] = useState(false);
@@ -42,11 +42,11 @@ export default function Login() {
     const t = setTimeout(() => {
       if (Pwa.installed()) return;
       if (Pwa.canInstall()) {
-        setHint("Install karne ke liye upar wala button dabahein.");
+        setHint("Tap the button above to install the app.");
       } else if (Pwa.isIOS()) {
         setHint("iPhone par: Share \u2192 Add to Home Screen.");
       } else if (location.protocol !== "file:") {
-        setHint("Ya Chrome menu (3 dot) \u2192 Install app.");
+        setHint("Or use the Chrome menu (3 dots) \u2192 Install app.");
       }
     }, 2000);
 
@@ -70,7 +70,7 @@ export default function Login() {
       return;
     }
     if (pass.length < 6) {
-      setErr("Password kam se kam 6 characters ka rakhein.");
+      setErr("Password must be at least 6 characters.");
       return;
     }
 
@@ -82,7 +82,7 @@ export default function Login() {
       })
       .catch((e2) => {
         setBusy(false);
-        setErr(e2 && e2.message ? e2.message : "Login nahi hua.");
+        setErr(e2 && e2.message ? e2.message : "Login failed.");
       });
   };
 
@@ -98,7 +98,7 @@ export default function Login() {
         <h1>
           4R<small>ADMIN</small>
         </h1>
-        <p className="sub">Panel me login karein</p>
+        <p className="sub">Sign in to the panel</p>
 
         <div className="panel">
           <h2 className="panel-title">Admin Login</h2>
@@ -125,7 +125,7 @@ export default function Login() {
               <span className="pwd-wrap">
                 <input
                   type={show ? "text" : "password"}
-                  placeholder="Apna password daalein"
+                  placeholder="Enter your password"
                   autoComplete="current-password"
                   value={pass}
                   onChange={(e) => {
@@ -154,7 +154,7 @@ export default function Login() {
           </form>
         </div>
 
-        <p className="adm-login-foot">Sirf admin email hi login kar sakti hai.</p>
+        <p className="adm-login-foot">Only the admin email can sign in.</p>
 
         <button
           type="button"

@@ -1,12 +1,12 @@
 /* ==========================================
    4R-ADMIN  |  Service Worker  (sw.js)
-   Phone par app install karne ke liye.
+   Used for installing the app on a phone.
 
    Rules:
-   - App ke apne files (html/css/js/icons) -> cache se chalao,
-     offline bhi khule
-   - Firebase / Telegram / gstatic -> kabhi cache nahi,
-     hamesha seedha network (data stale nahi hona chahiye)
+   - The app's own files (html/css/js/icons) come from the cache so
+     it opens offline too
+   - Firebase / Telegram / gstatic are never cached, they always go
+     straight to the network (the data must not go stale)
    ========================================== */
 
 var VERSION = "4r-admin-v3";
@@ -36,7 +36,7 @@ var SHELL = [
   "ICONS/apple-touch-icon.png"
 ];
 
-/* In sab ko cache mat karo - data ya login hamesha fresh chahiye */
+/* Never cache these - data and login must always be fresh */
 var SKIP = [
   "googleapis.com",
   "firebase",
@@ -75,7 +75,7 @@ self.addEventListener("fetch", function (e) {
   if (SKIP.some(function (s) { return url.href.indexOf(s) !== -1; })) return;
   if (url.origin !== self.location.origin) return;
 
-  /* navigation: network first, phir cache, phir index.html */
+  /* navigation: network first, then cache, then index.html */
   if (req.mode === "navigate") {
     e.respondWith(
       fetch(req)
@@ -93,7 +93,7 @@ self.addEventListener("fetch", function (e) {
     return;
   }
 
-  /* baaki assets: cache first, phir network se update */
+  /* other assets: cache first, then refresh from the network */
   e.respondWith(
     caches.match(req).then(function (hit) {
       if (hit) return hit;

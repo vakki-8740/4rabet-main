@@ -32,7 +32,7 @@ export default function Chats() {
       <main className="adm">
         <div className="adm-head">
           <h1>Chats</h1>
-          <p>Jis user se baat karni ho us par tap karein.</p>
+          <p>Tap the user you want to talk to.</p>
         </div>
 
         <section className="adm-stats">
@@ -65,14 +65,14 @@ export default function Chats() {
                 <div className="adm-empty-ico">
                   <IconChat size={26} />
                 </div>
-                <h3>Abhi koi chat nahi hai</h3>
-                <p>Jab user Online Chat page se message bhejega, wo yahan dikhega.</p>
+                <h3>No chats yet</h3>
+                <p>When a user sends a message from the Online Chat page it appears here.</p>
                 <a className="btn" href="../online-chat.html">Open User Chat</a>
               </div>
             ) : (
               list.map((c) => {
                 const n = Number(c.unreadAdmin || 0);
-                const last = c.lastText || "Chat shuru karein";
+                const last = c.lastText || "No messages yet";
                 const prefix = c.lastWho === "admin" ? "You: " : "";
 
                 return (

@@ -35,7 +35,7 @@ export default function StatusPopup({ open, current, onClose, onUpdate }) {
       <div className="adm-pop-box" role="dialog" aria-modal="true">
         <div className="adm-pop-head">
           <h3>Update Status</h3>
-          <p>Ek status choose karein, phir Update dabayein.</p>
+          <p>Choose a status, then press Update.</p>
         </div>
 
         <div className="adm-pop-body">

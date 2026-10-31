@@ -283,13 +283,13 @@ export function deleteChat(id) {
 export function readImage(file) {
   return new Promise((resolve, reject) => {
     if (!file || !/^image\//.test(file.type || "")) {
-      reject(new Error("Sirf image file chunein."));
+      reject(new Error("Please choose an image file only."));
       return;
     }
 
     const reader = new FileReader();
 
-    reader.onerror = () => reject(new Error("File padhi nahi ja saki."));
+    reader.onerror = () => reject(new Error("The file could not be read."));
 
     reader.onload = () => {
       const raw = String(reader.result || "");
@@ -324,7 +324,7 @@ export function readImage(file) {
         }
 
         if (out.length > IMG_MAX_BYTES) {
-          reject(new Error("Image bahut badi hai, chhoti image chunein."));
+          reject(new Error("The image is too large, please choose a smaller one."));
           return;
         }
 
@@ -341,17 +341,17 @@ export function readImage(file) {
 export function readFile(file) {
   return new Promise((resolve, reject) => {
     if (!file) {
-      reject(new Error("File chunein."));
+      reject(new Error("Please choose a file."));
       return;
     }
 
     if (file.size > FILE_MAX_BYTES) {
-      reject(new Error("File 350KB se badi hai. Chhoti file bhejein."));
+      reject(new Error("The file is larger than 350KB. Please send a smaller file."));
       return;
     }
 
     const reader = new FileReader();
-    reader.onerror = () => reject(new Error("File padhi nahi ja saki."));
+    reader.onerror = () => reject(new Error("The file could not be read."));
     reader.onload = () => {
       resolve({ dataUrl: String(reader.result || ""), name: file.name });
     };

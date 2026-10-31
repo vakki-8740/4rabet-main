@@ -2,9 +2,9 @@
    4R-ADMIN  |  auth.js
    Firebase Authentication se admin login.
 
-   - Pehli baar login: account apne aap ban jata hai
-   - Password code me KABHI store nahi hota
-   - Rules me sirf admin email hi complaints padh sakti hai
+   - First login: the account is created automatically
+   - The password is NEVER stored in the code
+   - Only the admin email may read complaints (see the rules)
    ========================================== */
 
 window.FourRAuth = (function () {
@@ -26,7 +26,7 @@ window.FourRAuth = (function () {
   }
 
   function email() {
-    /* Firestore rules se match hona chahiye */
+    /* must match the email in the Firestore rules */
     return "4r@admin.com";
   }
 
@@ -34,9 +34,9 @@ window.FourRAuth = (function () {
 
   /* ==========================================
      AUTO LOGIN
-     Session browser me hi save rehta hai, isliye
-     app band karke phir kholne par bhi login
-     reh jaata hai - dobara password nahi daalna padta.
+     The session is stored in the browser, so after closing
+     and reopening the app you stay signed in and do not have
+     to type the password again.
      ========================================== */
   function keepSignedIn() {
     var A = sdk();
@@ -56,42 +56,42 @@ window.FourRAuth = (function () {
     switch (code) {
       case "auth/configuration-not-found":
       case "auth/operation-not-allowed":
-        return "Login abhi band hai. Firebase Console > Authentication > " +
-               "Sign-in method me \"Email/Password\" ON karke wapas aayein.";
+        return "Login is disabled right now. Open Firebase Console > Authentication > " +
+               "Sign-in method, turn ON \"Email/Password\" and try again.";
 
       case "auth/user-not-found":
       case "auth/wrong-password":
       case "auth/invalid-credential":
       case "auth/invalid-login-credentials":
-        return "Email ya password galat hai.";
+        return "The email or password is incorrect.";
 
       case "auth/email-already-in-use":
-        return "Ye email pehle se registered hai. Apna password daalein.";
+        return "This email is already registered. Please enter your password.";
 
       case "auth/invalid-email":
-        return "Email sahi nahi hai.";
+        return "The email is not valid.";
 
       case "auth/weak-password":
-        return "Password kam se kam 6 characters ka rakhein.";
+        return "The password must be at least 6 characters long.";
 
       case "auth/too-many-requests":
-        return "Bahut zyada try kiye gaye. Thodi der baad koshish karein.";
+        return "Too many attempts. Please try again in a little while.";
 
       case "auth/network-request-failed":
-        return "Internet nahi hai. Connection check karein.";
+        return "You are offline. Please check your internet connection.";
 
       case "auth/api-key-not-valid":
-        return "Firebase API key sahi nahi hai (firebase-config.js dekhein).";
+        return "The Firebase API key is not valid (check firebase-config.js).";
     }
-    return msg || "Login nahi hua. Dobara koshish karein.";
+    return msg || "Login failed. Please try again.";
   }
 
-  /* ---------- sign in (account nahi hua to bana do) ---------- */
+  /* ---------- sign in (creates the account if it does not exist) ---------- */
   function signIn(mail, pass) {
     var A = sdk();
-    if (!A) return Promise.reject(new Error("Firebase Auth SDK load nahi hua"));
+    if (!A) return Promise.reject(new Error("The Firebase Auth SDK did not load"));
 
-    /* login ke baad session browser me save rahe */
+    /* keep the session in the browser after login */
     return keepSignedIn().then(function () {
       return A.signInWithEmailAndPassword(mail, pass);
     })
@@ -101,7 +101,7 @@ window.FourRAuth = (function () {
 
         if (code === "auth/user-not-found" || code === "auth/invalid-credential" ||
             code === "auth/wrong-password") {
-          /* account nahi hai -> bana do, phir login */
+          /* no account yet -> create it, then sign in */
           return A.createUserWithEmailAndPassword(mail, pass)
             .then(function (res) {
               return { user: res.user, created: true };
@@ -116,7 +116,7 @@ window.FourRAuth = (function () {
       });
   }
 
-  /* ---------- login zaroori hai ---------- */
+  /* ---------- login is required ---------- */
   function requireLogin(backTo) {
     return new Promise(function (resolve) {
       var A = sdk();
@@ -128,7 +128,7 @@ window.FourRAuth = (function () {
 
       var done = false;
 
-      /* purana session (agar hai) ko LOCAL me pakad lo */
+      /* pick up an existing session (if any) in LOCAL mode */
       keepSignedIn();
 
       A.onAuthStateChanged(function (u) {

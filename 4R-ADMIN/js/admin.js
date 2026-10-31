@@ -54,41 +54,66 @@ window.AdminPanel = (function () {
 
   /* ==========================================
      SHELL : menu (left) + year + active item
-     (opening animation admin panel me nahi hai)
+     (the admin panel has no opening animation)
      ========================================== */
 
   function initShell() {
-    /* ---------- login zaroori hai (content tab dikhe) ----------
-       login.html par guard nahi chalega (warna redirect loop) */
+    /* ---------- login required (content stays hidden until then) ----------
+       login.html is skipped (otherwise it would be a redirect loop) */
     if (window.FourRAuth && document.body.getAttribute("data-noauth") !== "1") {
       document.body.style.visibility = "hidden";
       window.FourRAuth.requireLogin("index.html");
     }
 
-    var drop = document.getElementById("menuDrop");
-    var btn  = document.getElementById("menuBtn");
+    var drop     = document.getElementById("menuDrop");
+    var btn      = document.getElementById("menuBtn");
+    var closeBtn = document.getElementById("menuClose");
 
     if (btn && drop) {
-      btn.addEventListener("click", function (e) {
-        e.stopPropagation();
-        var open = drop.classList.toggle("is-open");
-        btn.classList.toggle("is-open", open);
-        btn.setAttribute("aria-expanded", String(open));
-      });
+      /* Move the drawer into <body> so the header's stacking context cannot
+         place the backdrop on top of it. */
+      document.body.appendChild(drop);
+
+      var backdrop = document.createElement("div");
+      backdrop.className = "menu-backdrop";
+      backdrop.setAttribute("aria-hidden", "true");
+      document.body.appendChild(backdrop);
+
+      var isOpen = function () { return drop.classList.contains("is-open"); };
+
+      var open = function () {
+        drop.classList.add("is-open");
+        backdrop.classList.add("is-open");
+        btn.classList.add("is-open");
+        btn.setAttribute("aria-expanded", "true");
+        document.body.classList.add("is-menu-open");
+      };
 
       var close = function () {
         drop.classList.remove("is-open");
+        backdrop.classList.remove("is-open");
         btn.classList.remove("is-open");
         btn.setAttribute("aria-expanded", "false");
+        document.body.classList.remove("is-menu-open");
       };
 
-      document.addEventListener("click", function (e) {
-        if (!drop.contains(e.target) && !btn.contains(e.target)) close();
+      btn.addEventListener("click", function (e) {
+        e.stopPropagation();
+        if (isOpen()) close();
+        else open();
       });
 
-    document.addEventListener("keydown", function (e) {
-      if (e.key === "Escape") close();
-    });
+      if (closeBtn) closeBtn.addEventListener("click", close);
+      backdrop.addEventListener("click", close);
+
+      /* link tap -> close the drawer, then open the page */
+      drop.addEventListener("click", function (e) {
+        if (e.target.closest(".menu-item")) close();
+      });
+
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") close();
+      });
 
     /* ---------- Logout ---------- */
     var logout = document.getElementById("logoutItem");
@@ -96,7 +121,7 @@ window.AdminPanel = (function () {
       logout.addEventListener("click", function (e) {
         e.preventDefault();
         close();
-        if (window.confirm("Logout karein?")) signOut();
+        if (window.confirm("Log out of the admin panel?")) signOut();
       });
     }
 
@@ -108,7 +133,7 @@ window.AdminPanel = (function () {
       el.textContent = new Date().getFullYear();
     });
 
-    /* user-icon image na mile to apna svg avatar */
+    /* fall back to our own svg avatar if the user-icon image is missing */
     document.addEventListener("error", function (e) {
       var t = e.target;
       if (!t || t.tagName !== "IMG" || !t.hasAttribute("data-ua")) return;
@@ -178,7 +203,7 @@ window.AdminPanel = (function () {
 
     var at = statusAt || new Date().toISOString();
 
-    /* cache turant update (UI foran badle) */
+    /* update the cache immediately (so the UI refreshes) */
     var list = load();
     var hit = false;
     list.forEach(function (r) {
@@ -329,17 +354,17 @@ window.AdminPanel = (function () {
     { key: "detail",      label: "Detail" }
   ];
 
-  /* Saare action buttons (Show Password + View Image 1..n)
-     ek hi row me side by side. Buttons zyada ho to label chhota
-     ho jata hai taaki ek line me hi sab fit ho jayein. */
+  /* All action buttons (Show Password + View Image 1..n) sit in one
+     row. When there are many buttons the label shrinks so everything
+     still fits on a single line. */
   function actsHtml(rec) {
     var d = rec.data || {};
     var imgs = (rec.images || []).filter(function (im) { return im && im.dataUrl; });
     var out = "";
 
     if (d.password) {
-      /* 2 ya usse zyada image -> chhota label aur icon hata do,
-         taaki saare buttons ek hi line me fit ho jayein */
+      /* 2 or more images -> shorter label and no icon so all the
+         buttons fit on one line */
       var tight = imgs.length >= 2;
       out += '<button type="button" class="adm-act adm-act--soft" data-reveal>' +
                (tight ? "" : ICON.lock) +
@@ -418,7 +443,7 @@ window.AdminPanel = (function () {
       '<div class="adm-pop-box" role="dialog" aria-modal="true">' +
         '<div class="adm-pop-head">' +
           '<h3>Update Status</h3>' +
-          '<p>Ek status choose karein, phir Update dabayein.</p>' +
+          '<p>Choose a status, then press Update.</p>' +
         '</div>' +
         '<div class="adm-pop-body">' +
           '<button type="button" class="adm-opt adm-opt--pending" data-s="pending"><i></i>Pending</button>' +

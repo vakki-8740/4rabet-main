@@ -1,7 +1,7 @@
 /* ==========================================
    4R BET  |  Telegram Bridge  (telegram.js)
-   User panel + Admin panel dono use karte hain.
-   Settings admin panel ke Setting page se update hoti hain.
+   Used by both the user panel and the admin panel.
+   The settings are updated from the admin panel's Settings page.
    ========================================== */
 
 window.FourRTelegram = (function () {
@@ -72,8 +72,8 @@ window.FourRTelegram = (function () {
            ", " + h12 + ":" + pad(d.getMinutes()) + " " + (h >= 12 ? "PM" : "AM");
   }
 
-  /* Complaint ke important fields ka order - Telegram message me isi hisaab se dikhenge.
-     Images kabhi nahi bhejte. */
+  /* Order of the important complaint fields - the Telegram message shows
+     them in this order. Images are never sent. */
   var FIELD_ORDER = [
     { key: "userName",   label: "User Name",            icon: "\uD83D\uDC64" },
     { key: "mobile",     label: "Mobile Number",        icon: "\uD83D\uDCF1" },
@@ -109,7 +109,7 @@ window.FourRTelegram = (function () {
       lines.push(f.icon + " <b>" + f.label + ":</b> " + esc(val));
     });
 
-    lines.push("🖼 <b>Images:</b> " + imageCount + (imageCount ? " (panel me dekhein)" : ""));
+    lines.push("🖼 <b>Images:</b> " + imageCount + (imageCount ? " (view in the panel)" : ""));
     lines.push("🕒 <b>Time:</b> " + formatDateTime(record.submittedAt));
     lines.push("🆔 <b>ID:</b> " + esc(record.id));
 
@@ -119,8 +119,8 @@ window.FourRTelegram = (function () {
   function buildTestMessage() {
     return "\u2705 <b>4R-ADMIN</b> connection test\n" +
            "━━━━━━━━━━━━━━\n" +
-           "Telegram alerts <b>ON</b> hai.\n" +
-           "Ab har nayi complaint yahan aa jayegi.\n" +
+           "Telegram alerts are <b>ON</b>.\n" +
+           "Every new complaint will now arrive here.\n" +
            "\uD83D\uDCDE <b>Time:</b> " + formatDateTime(new Date().toISOString());
   }
 
@@ -129,14 +129,14 @@ window.FourRTelegram = (function () {
   function sendText(text) {
     var s = getSettings();
     if (!s.botToken || !s.chatId) {
-      return Promise.reject(new Error("Bot token ya chat id set nahi hai."));
+      return Promise.reject(new Error("Bot token or chat ID is not set."));
     }
 
-    /* Content-Type "text/plain" jaan bujh kar rakha hai.
-       "application/json" par browser preflight (OPTIONS) bhejta hai aur
-       Telegram Bot API preflight ko allow nahi karta - request fail ho jati hai.
-       text/plain simple request hai (no preflight) aur Telegram body ko JSON
-       samajh leta hai, isliye seedha browser se kaam karta hai. */
+    /* Content-Type is deliberately "text/plain".
+       With "application/json" the browser sends a preflight (OPTIONS) request,
+       which the Telegram Bot API does not allow - so the request fails.
+       text/plain is a simple request (no preflight) and Telegram still reads
+       the body as JSON, so this works straight from the browser. */
     return fetch("https://api.telegram.org/bot" + s.botToken + "/sendMessage", {
       method: "POST",
       headers: { "Content-Type": "text/plain;charset=utf-8" },
@@ -158,15 +158,15 @@ window.FourRTelegram = (function () {
       })
       .catch(function (err) {
         var msg = (err && err.message) || "Network error";
-        // Browser CORS / offline ho to bhi complaint submit na toote
+        // so the complaint submit does not break on CORS / offline
         if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
-          throw new Error("Network error - Telegram tak message nahi pahuncha.");
+          throw new Error("Network error - the message did not reach Telegram.");
         }
         throw new Error(msg);
       });
   }
 
-  /* ---------- Outbox (offline / error par message save) ---------- */
+  /* ---------- Outbox (keeps the message on offline / error) ---------- */
 
   function readQueue() {
     try {
@@ -200,7 +200,7 @@ window.FourRTelegram = (function () {
       return chain.then(function () {
         return sendText(text)
           .then(function () { sent++; })
-          .catch(function () { /* ruk jao, agli baar try hoga */ throw new Error("stop"); });
+          .catch(function () { /* stop here, it will be retried next time */ throw new Error("stop"); });
       });
     }, Promise.resolve())
       .then(function () { return sent; })
@@ -214,7 +214,7 @@ window.FourRTelegram = (function () {
       });
   }
 
-  /* Public: complaint submit hone par call hota hai */
+  /* Public: called when a complaint is submitted */
   function notifyComplaint(record) {
     if (!isReady()) return Promise.resolve({ skipped: true });
 
