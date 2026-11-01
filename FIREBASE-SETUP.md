@@ -57,7 +57,16 @@ Auth       → 400 CONFIGURATION_NOT_FOUND  (Authentication not set up yet)
 2. Delete what is there and paste the whole content of **`firestore.rules`** from this repo
 3. Press **Publish**
 
-What the rules do (same as the old project):
+What the rules do:
+
+- `complaints` - anyone may create, only the admin may read / update / delete
+- `chats` - guest chat, the random chat id acts as the access key
+- `visitors` - **new**: the user panel records one anonymous document per browser
+  (visits, pages seen, complained or not). Anyone may write, only the admin may read
+- `adminLogins` - **new**: login history + the 5-logins-per-day limit. Anyone may
+  create an entry (a failed attempt has to be recorded too), only the admin may read,
+  and an entry can never be changed or deleted from the site
+
 
 - `complaints`
   - `create` → allowed for everyone (visitors submit without login)

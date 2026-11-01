@@ -9,7 +9,7 @@
      straight to the network (the data must not go stale)
    ========================================== */
 
-var VERSION = "4r-admin-v4";
+var VERSION = "4r-admin-v5";
 var SHELL = [
   "./",
   "index.html",
@@ -18,12 +18,15 @@ var SHELL = [
   "complaint.html",
   "chat.html",
   "room.html",
+  "visitors.html",
   "css/style.css",
   "css/admin.css",
   "fonts/dm-sans-latin.woff2",
   "fonts/dm-sans-latin-ext.woff2",
   "js/admin.js",
   "js/admin-chat.js",
+  "js/admin-visitors.js",
+  "js/admin-logins.js",
   "js/auth.js",
   "js/firebase-config.js",
   "js/firebase-db.js",

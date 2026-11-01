@@ -334,7 +334,7 @@ async function copyCollection(colPath, opts) {
   console.log("\nDone. The old project data is untouched (nothing was deleted).");
 })().catch((err) => {
   console.error("\nFAILED: " + err.message);
-  console.error("\nAgar READ permission denied aaya hai to purane project ki Firestore Rules me");
+  console.error("\nIf you get READ permission denied, add your account to the old project rules");
   console.error("set `allow read: if true;` temporarily and run it again (revert it afterwards).");
   process.exit(1);
 });

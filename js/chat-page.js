@@ -513,6 +513,8 @@
       var n = nameField.value.trim();
       myName = n ? C.setName(n) : C.setName(C.guestName(chatId));
       if (!myName) myName = C.guestName(chatId);
+      /* visitor stats: keep the name next to the visitor record */
+      if (window.FourRVisitor && n) window.FourRVisitor.markName(n);
       nameModal.classList.remove("is-open");
       start();
     }

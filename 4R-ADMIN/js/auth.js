@@ -12,6 +12,47 @@ window.FourRAuth = (function () {
 
   var auth = null;
   var user = null;
+  var db   = null;
+
+  /* ---------- login limit ---------- */
+  var MAX_PER_DAY = 5;               /* a password login may be used 5 times a day */
+  var LOGIN_COL   = "adminLogins";   /* collection that stores the login history */
+
+  /* start of today (local time) in milliseconds */
+  function dayStart() {
+    var d = new Date();
+    d.setHours(0, 0, 0, 0);
+    return d.getTime();
+  }
+
+  /* ---------- what device / browser is this ---------- */
+  function parseUA(ua) {
+    ua = ua || navigator.userAgent || "";
+
+    var device =
+      /iPad|Tablet|PlayBook|Silk/i.test(ua) ? "Tablet" :
+      /Mobi|Android|iPhone|iPod|Windows Phone/i.test(ua) ? "Mobile" :
+      "Desktop";
+
+    var os =
+      /Android/i.test(ua) ? "Android" :
+      /iPhone|iPad|iPod/i.test(ua) ? "iOS" :
+      /Windows/i.test(ua) ? "Windows" :
+      /Mac OS X/i.test(ua) ? "macOS" :
+      /Linux/i.test(ua) ? "Linux" :
+      "Other";
+
+    var browser =
+      /Edg\//i.test(ua) ? "Edge" :
+      /OPR\/|Opera/i.test(ua) ? "Opera" :
+      /SamsungBrowser/i.test(ua) ? "Samsung" :
+      /Chrome\//i.test(ua) ? "Chrome" :
+      /Firefox\//i.test(ua) ? "Firefox" :
+      /Safari\//i.test(ua) ? "Safari" :
+      "Other";
+
+    return { device: device, os: os, browser: browser };
+  }
 
   function sdk() {
     var FB = window.firebase;
@@ -49,6 +90,113 @@ window.FourRAuth = (function () {
     } catch (e) {
       return Promise.resolve(false);
     }
+  }
+
+  /* ---------- Firestore (only needed for the login history) ---------- */
+  function fs() {
+    var FB = window.firebase;
+    if (!FB || !FB.firestore) return null;
+
+    if (!FB.apps || !FB.apps.length) {
+      if (!window.FIREBASE_CONFIG) return null;
+      FB.initializeApp(window.FIREBASE_CONFIG);
+    }
+
+    if (!db) db = FB.firestore();
+    return db;
+  }
+
+  /* Write one entry to the login history. Never blocks the login itself. */
+  function logLogin(result, mail) {
+    var D = fs();
+    if (!D) return Promise.resolve(false);
+
+    var i = parseUA(navigator.userAgent || "");
+
+    return D.collection(LOGIN_COL).add({
+      email:     (mail || email()).toLowerCase(),
+      at:        Date.now(),
+      result:    result,             /* success | blocked | failed */
+      device:    i.device,
+      browser:   i.browser,
+      os:        i.os,
+      userAgent: (navigator.userAgent || "").slice(0, 300)
+    })
+      .then(function () { return true; })
+      .catch(function () { return false; });
+  }
+
+  /* How many successful logins today (local day)? */
+  function countTodayLogins() {
+    var D = fs();
+    if (!D) return Promise.resolve(0);
+
+    return D.collection(LOGIN_COL)
+      .orderBy("at", "desc")
+      .limit(80)
+      .get()
+      .then(function (snap) {
+        var start = dayStart();
+        var n = 0;
+
+        snap.forEach(function (doc) {
+          var d = doc.data() || {};
+          if (d.result === "success" && Number(d.at) >= start) n++;
+        });
+
+        return n;
+      })
+      .catch(function () { return 0; });
+  }
+
+  /* The last N logins, newest first (used by Settings). */
+  function loginHistory(limit) {
+    var D = fs();
+    if (!D) return Promise.resolve([]);
+
+    return D.collection(LOGIN_COL)
+      .orderBy("at", "desc")
+      .limit(limit || 15)
+      .get()
+      .then(function (snap) {
+        var list = [];
+
+        snap.forEach(function (doc) {
+          var d = doc.data() || {};
+          list.push({
+            id:      doc.id,
+            at:      Number(d.at) || 0,
+            result:  d.result || "",
+            email:   d.email || "",
+            device:  d.device || "",
+            browser: d.browser || "",
+            os:      d.os || ""
+          });
+        });
+
+        return list;
+      })
+      .catch(function () { return []; });
+  }
+
+  /* After Firebase accepted the password: is today's limit still free? */
+  function afterAuth(A) {
+    return countTodayLogins().then(function (used) {
+      if (used >= MAX_PER_DAY) {
+        return logLogin("blocked").then(function () {
+          return A.signOut().then(function () {
+            var e = new Error(
+              "Daily login limit reached (" + MAX_PER_DAY + " logins per day). " +
+              "Please try again tomorrow."
+            );
+            e.code = "app/daily-limit";
+            throw e;
+          });
+        });
+      }
+
+      return logLogin("success");
+    });
   }
 
   /* ---------- readable error ---------- */
@@ -112,7 +260,12 @@ window.FourRAuth = (function () {
             });
         }
 
+        logLogin("failed", mail);
         throw new Error(friendly(code, err && err.message) + m);
+      })
+      .then(function (res) {
+        /* Firebase accepted the password - now check the daily limit */
+        return afterAuth(A).then(function () { return res; });
       });
   }
 
@@ -158,6 +311,10 @@ window.FourRAuth = (function () {
   return {
     adminEmail: email,
     signIn: signIn,
+    maxPerDay: function () { return MAX_PER_DAY; },
+    todayLogins: countTodayLogins,
+    loginHistory: loginHistory,
+    logLogin: logLogin,
     keepSignedIn: keepSignedIn,
     requireLogin: requireLogin,
     signOut: signOut,

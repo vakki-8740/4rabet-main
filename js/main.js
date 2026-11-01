@@ -701,6 +701,11 @@
         var record = buildRecord(form, images);
         var saved  = addComplaint(record);
 
+        /* ---------- visitor stats: this browser now counts as "complained" ---------- */
+        if (window.FourRVisitor) {
+          window.FourRVisitor.markComplaint(record.data ? record.data.userName : "");
+        }
+
         /* ---------- Telegram alert (in the background - the user does not wait) ---------- */
         if (window.FourRTelegram) {
           window.FourRTelegram.notifyComplaint(record).then(function (res) {

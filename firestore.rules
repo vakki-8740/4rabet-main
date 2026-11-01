@@ -70,5 +70,35 @@ service cloud.firestore {
         allow read, create, update, delete: if true;
       }
     }
+
+    /* ======================================================
+       VISITORS  (site visitor statistics)
+       ------------------------------------------------------
+       Every visitor's browser keeps an anonymous id and updates
+       one document in this collection (visits +1, pages seen).
+       Anyone may write - there is no login on the user panel.
+       Only the admin can read the statistics.
+       ====================================================== */
+
+    match /visitors/{visitorId} {
+      allow create, update: if true;
+      allow read:   if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /* ======================================================
+       ADMIN LOGIN HISTORY  (5 logins per day limit)
+       ------------------------------------------------------
+       A login attempt has to be recorded BEFORE the admin is
+       signed in (a failed attempt is history too), so create is
+       open. Nobody can read or edit the history except the admin,
+       and records can never be changed or deleted from the site.
+       ====================================================== */
+
+    match /adminLogins/{entryId} {
+      allow create: if true;
+      allow read:   if isAdmin();
+      allow update, delete: if false;
+    }
   }
 }

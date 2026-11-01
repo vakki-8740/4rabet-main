@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -39,6 +39,7 @@
           <div class="menu-list">
             <a class="menu-item" href="index.html">Home</a>
             <a class="menu-item" href="chat.html">Chats</a>
+            <a class="menu-item" href="visitors.html">Visitors</a>
             <a class="menu-item" href="settings.html">Settings</a>
             <a class="menu-item" href="../index.html">User Panel</a>
             <a class="menu-item" href="#" data-install style="display:none">
@@ -104,7 +105,7 @@
       </div>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Firebase (Firestore)<small id="fbSub">Connect ho raha hai...</small></span>
+        <span class="adm-row-k">Firebase (Firestore)<small id="fbSub">Connecting...</small></span>
         <span class="adm-set-val" id="fbCount">0</span>
       </div>
 
@@ -161,6 +162,37 @@
       </div>
     </section>
 
+    <!-- ================= LOGIN HISTORY ================= -->
+    <section class="adm-box" style="margin-bottom:14px">
+      <div class="adm-box-head">
+        <h2>Login History</h2>
+        <span id="loginLimitTag">5 / DAY</span>
+      </div>
+
+      <div class="adm-hint">
+        Every admin login is saved here, and the panel allows
+        <b><span id="loginMax">5</span> logins per day</b>.
+        Blocked attempts are saved too, so you can always see who tried.
+      </div>
+
+      <div class="adm-set-row">
+        <span class="adm-row-k">Logins Today<small>Successful logins since midnight</small></span>
+        <span class="adm-set-val" id="loginToday">0</span>
+      </div>
+
+      <div class="adm-set-row">
+        <span class="adm-row-k">Last Login<small>Most recent successful login</small></span>
+        <span class="adm-set-val" id="loginLast" style="font-size:13.5px">-</span>
+      </div>
+
+      <div class="adm-log-list" id="loginList"></div>
+
+      <div class="adm-note" style="border-top:1px solid var(--line)">
+        To reset today's counter, open Firebase Console &rarr; Firestore &rarr;
+        <b>adminLogins</b> and delete today's documents.
+      </div>
+    </section>
+
     <!-- ================= PANEL PREFERENCES ================= -->
     <section class="adm-box" style="margin-bottom:14px">
       <div class="adm-box-head">
@@ -174,12 +206,12 @@
       </div>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Storage Used<small>Browser me saved data</small></span>
+        <span class="adm-row-k">Storage Used<small>Data saved in this browser</small></span>
         <span class="adm-set-val" id="kbVal">0 KB</span>
       </div>
 
       <div class="adm-set-row">
-        <span class="adm-row-k">Total Complaints<small>Panel me saved</small></span>
+        <span class="adm-row-k">Total Complaints<small>Saved in this panel</small></span>
         <span class="adm-set-val" id="cVal">0</span>
       </div>
     </section>
@@ -230,12 +262,16 @@
   <script defer src="js/pwa.js"></script>
   <script defer src="js/telegram.js"></script>
   <script defer src="js/admin.js"></script>
+  <script defer src="js/admin-logins.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", function () {
       "use strict";
       var A = window.AdminPanel;
       var T = window.FourRTelegram;
       A.initShell();
+
+      /* ---------- login history ---------- */
+      if (window.FourRLogins) window.FourRLogins.load();
 
       /* ---------- PWA : install + auto login status ---------- */
       var pwaState = document.getElementById("pwaState");
