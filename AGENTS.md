@@ -39,3 +39,13 @@ both places, apply it to the admin panels in the same commit:
   `npm run build` inside `react-admin/` so the committed `dist/` matches the source
 
 Always write user-facing copy in English (no Hinglish), in both panels.
+
+## Reporting changes back to the user
+
+After every batch of work, finish the reply with one clean, scannable list of **everything**
+that changed — never bury it in paragraphs:
+
+- one emoji per line, then what changed in plain language, then the file(s) touched
+- group the items in the same order the work was done
+- mark what was **tested** (browser check, build, syntax) and what is still **pending**
+- keep the wording simple and non-technical; the user reads this list to know what to verify
