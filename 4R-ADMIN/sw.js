@@ -9,7 +9,7 @@
      straight to the network (the data must not go stale)
    ========================================== */
 
-var VERSION = "4r-admin-v3";
+var VERSION = "4r-admin-v4";
 var SHELL = [
   "./",
   "index.html",
@@ -20,6 +20,8 @@ var SHELL = [
   "room.html",
   "css/style.css",
   "css/admin.css",
+  "fonts/dm-sans-latin.woff2",
+  "fonts/dm-sans-latin-ext.woff2",
   "js/admin.js",
   "js/admin-chat.js",
   "js/auth.js",
