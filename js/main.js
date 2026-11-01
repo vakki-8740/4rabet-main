@@ -641,16 +641,19 @@
   }
 
   /* ==========================================
-     DAILY COMPLAINT LIMIT  (per device)
+     COMPLAINT LIMIT  (per device)
      ----------------------------------------------------------
-     One device (browser) may send at most 5 complaints per day.
+     One device may send up to 30 complaints a day.
+     The moment the 30th is sent, complaints are blocked for
+     24 hours - the counter only starts again after that block.
      The log lives in localStorage, so it is counted per browser
      and works offline. Clearing the browser data resets it -
      with no user accounts there is no way to lock it harder.
      ========================================== */
 
-  var LIMIT_PER_DAY = 5;
-  var LIMIT_KEY = "4rbet_complaint_log";
+  var LIMIT_PER_DAY = 30;
+  var BLOCK_HOURS   = 24;
+  var LIMIT_KEY     = "4rbet_complaint_limit";
 
   function dayKey() {
     var d = new Date();
@@ -660,35 +663,70 @@
     return d.getFullYear() + "-" + (m < 10 ? "0" + m : m) + "-" + (day < 10 ? "0" + day : day);
   }
 
-  function limitLog() {
+  /* { count, day, blockedUntil } */
+  function limitState() {
+    var blank = { count: 0, day: dayKey(), blockedUntil: 0 };
+    var obj = null;
+
     try {
       var raw = localStorage.getItem(LIMIT_KEY);
-      var obj = raw ? JSON.parse(raw) : null;
-
-      if (!obj || obj.day !== dayKey() || !Array.isArray(obj.stamps)) {
-        return { day: dayKey(), stamps: [] };
-      }
-
-      return obj;
+      obj = raw ? JSON.parse(raw) : null;
     } catch (e) {
-      return { day: dayKey(), stamps: [] };
+      obj = null;
     }
+
+    if (!obj || typeof obj !== "object") return blank;
+
+    var st = {
+      count:        Number(obj.count) || 0,
+      day:          obj.day || dayKey(),
+      blockedUntil: Number(obj.blockedUntil) || 0
+    };
+
+    var now = Date.now();
+
+    /* the 24 hour block is over -> start fresh */
+    if (st.blockedUntil && st.blockedUntil <= now) return blank;
+
+    /* a new day and no running block -> the daily counter starts again */
+    if (!st.blockedUntil && st.day !== dayKey()) return blank;
+
+    return st;
   }
 
-  function limitUsed() { return limitLog().stamps.length; }
+  function limitBlocked() {
+    return limitState().blockedUntil > Date.now();
+  }
 
   function limitLeft() {
-    var left = LIMIT_PER_DAY - limitUsed();
+    var left = LIMIT_PER_DAY - limitState().count;
     return left > 0 ? left : 0;
   }
 
   function limitAdd() {
-    var log = limitLog();
-    log.stamps.push(Date.now());
+    var st = limitState();
+
+    st.count += 1;
+    st.day = dayKey();
+
+    /* the last allowed complaint starts the 24 hour block */
+    if (st.count >= LIMIT_PER_DAY) {
+      st.blockedUntil = Date.now() + BLOCK_HOURS * 60 * 60 * 1000;
+    }
 
     try {
-      localStorage.setItem(LIMIT_KEY, JSON.stringify(log));
+      localStorage.setItem(LIMIT_KEY, JSON.stringify(st));
     } catch (e) { /* private mode - the limit simply cannot be counted */ }
+  }
+
+  function leftText(ms) {
+    var mins = Math.max(0, Math.ceil(ms / 60000));
+    var h = Math.floor(mins / 60);
+    var m = mins % 60;
+
+    if (h && m) return h + "h " + m + "m";
+    if (h) return h + "h";
+    return m + "m";
   }
 
   /* the small line above the Send button */
@@ -704,20 +742,25 @@
       btn.parentNode.insertBefore(note, btn);
     }
 
-    var left = limitLeft();
+    var st  = limitState();
+    var now = Date.now();
 
-    if (left <= 0) {
+    if (st.blockedUntil > now) {
       note.className = "limit-note is-blocked";
-      note.textContent = "Daily limit reached \u2014 one device can send up to " +
-        LIMIT_PER_DAY + " complaints per day. Please try again tomorrow.";
+      note.textContent = "Limit reached \u2014 one device can send " + LIMIT_PER_DAY +
+        " complaints per day. New complaints are blocked for " + BLOCK_HOURS +
+        " hours; you can send again in " + leftText(st.blockedUntil - now) + ".";
       btn.setAttribute("disabled", "disabled");
       btn.classList.add("is-disabled");
-    } else {
-      note.className = "limit-note";
-      note.textContent = left + " of " + LIMIT_PER_DAY + " complaints left today.";
-      btn.removeAttribute("disabled");
-      btn.classList.remove("is-disabled");
+      return 0;
     }
+
+    var left = LIMIT_PER_DAY - st.count;
+
+    note.className = "limit-note";
+    note.textContent = left + " of " + LIMIT_PER_DAY + " complaints left today.";
+    btn.removeAttribute("disabled");
+    btn.classList.remove("is-disabled");
 
     return left;
   }
@@ -732,8 +775,8 @@
     form.addEventListener("submit", function (e) {
       e.preventDefault();
 
-      /* daily limit, per device */
-      if (limitLeft() <= 0) {
+      /* per device limit + the 24 hour block */
+      if (limitBlocked() || limitLeft() <= 0) {
         paintLimit(form);
         return;
       }
@@ -831,6 +874,12 @@
 
     paintLimit(form);
   });
+
+  if (document.querySelector("form[id]")) {
+    window.setInterval(function () {
+      document.querySelectorAll("form[id]").forEach(function (f) { paintLimit(f); });
+    }, 30000);
+  }
 
   /* ---------- Image upload: name + preview ---------- */
 
