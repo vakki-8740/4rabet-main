@@ -149,6 +149,13 @@ export function Header({ simple }) {
                   {unread > 0 && <span className="menu-badge">{unread > 99 ? "99+" : unread}</span>}
                 </Link>
                 <Link
+                  className={"menu-item" + (isActive("/visitors") ? " is-active" : "")}
+                  to="/visitors"
+                  onClick={closeMenu}
+                >
+                  Visitors
+                </Link>
+                <Link
                   className={"menu-item" + (isActive("/settings") ? " is-active" : "")}
                   to="/settings"
                   onClick={closeMenu}

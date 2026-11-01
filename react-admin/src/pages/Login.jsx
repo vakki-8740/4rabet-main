@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { ADMIN_EMAIL, signIn } from "../lib/auth.js";
+import { MAX_PER_DAY } from "../lib/logins.js";
 import { useAuth } from "../lib/AuthContext.jsx";
 import Shell from "../ui/Shell.jsx";
 import { useToast } from "../ui/Toast.jsx";
@@ -44,7 +45,7 @@ export default function Login() {
       if (Pwa.canInstall()) {
         setHint("Tap the button above to install the app.");
       } else if (Pwa.isIOS()) {
-        setHint("iPhone par: Share \u2192 Add to Home Screen.");
+        setHint("On iPhone: Share \u2192 Add to Home Screen.");
       } else if (location.protocol !== "file:") {
         setHint("Or use the Chrome menu (3 dots) \u2192 Install app.");
       }
@@ -155,6 +156,9 @@ export default function Login() {
         </div>
 
         <p className="adm-login-foot">Only the admin email can sign in.</p>
+        <p className="adm-login-foot">
+          For security this panel allows <b>{MAX_PER_DAY} logins per day</b>.
+        </p>
 
         <button
           type="button"

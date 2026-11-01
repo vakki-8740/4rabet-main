@@ -7,6 +7,7 @@ import Complaint from "./pages/Complaint.jsx";
 import Chats from "./pages/Chats.jsx";
 import Room from "./pages/Room.jsx";
 import Settings from "./pages/Settings.jsx";
+import Visitors from "./pages/Visitors.jsx";
 
 function Guard({ children }) {
   const { user, ready } = useAuth();
@@ -62,6 +63,14 @@ export default function App() {
               element={
                 <Guard>
                   <Room />
+                </Guard>
+              }
+            />
+            <Route
+              path="/visitors"
+              element={
+                <Guard>
+                  <Visitors />
                 </Guard>
               }
             />

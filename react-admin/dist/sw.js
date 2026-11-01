@@ -5,7 +5,7 @@
    - firebase / telegram : never cache
    ========================================== */
 
-var VERSION = "4r-react-admin-v1";
+var VERSION = "4r-react-admin-v2";
 
 var SKIP = [
   "googleapis.com",

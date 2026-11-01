@@ -11,7 +11,7 @@ export function getApp() {
   if (app) return app;
 
   const cfg = window.FIREBASE_CONFIG;
-  if (!cfg) throw new Error("firebase-config.js missing hai");
+  if (!cfg) throw new Error("firebase-config.js is missing");
 
   app = firebase.apps && firebase.apps.length
     ? firebase.app()

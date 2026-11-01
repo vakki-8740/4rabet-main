@@ -5,6 +5,7 @@ import { cacheRead, cacheWrite, deleteAll, isOnline, listComplaints } from "../l
 import { getLastError } from "../lib/fb.js";
 import { useComplaints } from "../lib/useComplaints.js";
 import Shell from "../ui/Shell.jsx";
+import LoginHistory from "../ui/LoginHistory.jsx";
 import { useToast } from "../ui/Toast.jsx";
 import { IconBack, IconDown } from "../ui/icons.jsx";
 
@@ -160,7 +161,7 @@ export default function Settings() {
     t.sendText(
       "\u2705 <b>4R-ADMIN</b> connection test\n" +
         "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n" +
-        "Telegram alerts <b>ON</b> hai.\n" +
+        "Telegram alerts are <b>ON</b>.\n" +
         "Every new complaint will now arrive here."
     )
       .then(() => toast("Test Message Sent"))
@@ -470,6 +471,9 @@ export default function Settings() {
         </section>
 
         {/* PREFERENCES */}
+        {/* ---------------- Login History ---------------- */}
+        <LoginHistory />
+
         <section className="adm-box" style={{ marginBottom: 14 }}>
           <div className="adm-box-head">
             <h2>Panel Preferences</h2>

@@ -1,4 +1,5 @@
 import { FB, getAuth, ADMIN_EMAIL } from "./fb.js";
+import { afterAuth, logLogin, MAX_PER_DAY } from "./logins.js";
 
 export { ADMIN_EMAIL };
 
@@ -65,7 +66,12 @@ export function signIn(mail, pass) {
           });
       }
 
+      logLogin("failed", mail);
       throw new Error(friendly(code, err && err.message) + m);
+    })
+    .then((res) => {
+      /* the password was accepted - now check today's limit */
+      return afterAuth(A).then(() => res);
     });
 }
 
@@ -79,3 +85,5 @@ export function onAuth(cb) {
   keepSignedIn(A);
   return A.onAuthStateChanged(cb);
 }
+
+export const maxPerDay = MAX_PER_DAY;
