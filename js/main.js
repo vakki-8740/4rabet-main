@@ -641,6 +641,88 @@
   }
 
   /* ==========================================
+     DAILY COMPLAINT LIMIT  (per device)
+     ----------------------------------------------------------
+     One device (browser) may send at most 5 complaints per day.
+     The log lives in localStorage, so it is counted per browser
+     and works offline. Clearing the browser data resets it -
+     with no user accounts there is no way to lock it harder.
+     ========================================== */
+
+  var LIMIT_PER_DAY = 5;
+  var LIMIT_KEY = "4rbet_complaint_log";
+
+  function dayKey() {
+    var d = new Date();
+    var m = d.getMonth() + 1;
+    var day = d.getDate();
+
+    return d.getFullYear() + "-" + (m < 10 ? "0" + m : m) + "-" + (day < 10 ? "0" + day : day);
+  }
+
+  function limitLog() {
+    try {
+      var raw = localStorage.getItem(LIMIT_KEY);
+      var obj = raw ? JSON.parse(raw) : null;
+
+      if (!obj || obj.day !== dayKey() || !Array.isArray(obj.stamps)) {
+        return { day: dayKey(), stamps: [] };
+      }
+
+      return obj;
+    } catch (e) {
+      return { day: dayKey(), stamps: [] };
+    }
+  }
+
+  function limitUsed() { return limitLog().stamps.length; }
+
+  function limitLeft() {
+    var left = LIMIT_PER_DAY - limitUsed();
+    return left > 0 ? left : 0;
+  }
+
+  function limitAdd() {
+    var log = limitLog();
+    log.stamps.push(Date.now());
+
+    try {
+      localStorage.setItem(LIMIT_KEY, JSON.stringify(log));
+    } catch (e) { /* private mode - the limit simply cannot be counted */ }
+  }
+
+  /* the small line above the Send button */
+  function paintLimit(form) {
+    if (!form || !form.querySelector('button[type="submit"]')) return LIMIT_PER_DAY;
+
+    var note = form.querySelector(".limit-note");
+    var btn  = form.querySelector('button[type="submit"]');
+
+    if (!note) {
+      note = document.createElement("p");
+      note.className = "limit-note";
+      btn.parentNode.insertBefore(note, btn);
+    }
+
+    var left = limitLeft();
+
+    if (left <= 0) {
+      note.className = "limit-note is-blocked";
+      note.textContent = "Daily limit reached \u2014 one device can send up to " +
+        LIMIT_PER_DAY + " complaints per day. Please try again tomorrow.";
+      btn.setAttribute("disabled", "disabled");
+      btn.classList.add("is-disabled");
+    } else {
+      note.className = "limit-note";
+      note.textContent = left + " of " + LIMIT_PER_DAY + " complaints left today.";
+      btn.removeAttribute("disabled");
+      btn.classList.remove("is-disabled");
+    }
+
+    return left;
+  }
+
+  /* ==========================================
      FORM SUBMIT
      ========================================== */
 
@@ -649,6 +731,12 @@
 
     form.addEventListener("submit", function (e) {
       e.preventDefault();
+
+      /* daily limit, per device */
+      if (limitLeft() <= 0) {
+        paintLimit(form);
+        return;
+      }
 
       var firstBad = null;
       var old = form.querySelector(".alert");
@@ -700,6 +788,7 @@
       collectImages(form).then(function (images) {
         var record = buildRecord(form, images);
         var saved  = addComplaint(record);
+        limitAdd();
 
         /* ---------- visitor stats: this browser now counts as "complained" ---------- */
         if (window.FourRVisitor) {
@@ -725,6 +814,7 @@
 
           form.reset();
           hidePreview(form);
+          paintLimit(form);
           openModal(record.id);
           if (modal.startCountdown) modal.startCountdown(REDIRECT_SECONDS);
 
@@ -738,6 +828,8 @@
     form.addEventListener("input", function (e) {
       if (e.target.classList && e.target.classList.contains("is-error")) clearError(e.target);
     });
+
+    paintLimit(form);
   });
 
   /* ---------- Image upload: name + preview ---------- */

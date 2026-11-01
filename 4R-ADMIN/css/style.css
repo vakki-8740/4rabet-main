@@ -1064,6 +1064,30 @@ body.is-menu-open .menu-btn {
 
 .field textarea { resize: vertical; }
 
+/* ========== DAILY COMPLAINT LIMIT ========== */
+
+.limit-note {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  margin: 2px 0 4px;
+}
+
+.limit-note.is-blocked {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  padding: 11px 13px;
+  font-weight: 500;
+}
+
+.btn.is-disabled {
+  opacity: .55;
+  pointer-events: none;
+}
+
 /* ========== BUTTON LOADING ========== */
 
 .btn { position: relative; }
