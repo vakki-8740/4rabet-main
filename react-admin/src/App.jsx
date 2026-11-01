@@ -8,10 +8,19 @@ import Chats from "./pages/Chats.jsx";
 import Room from "./pages/Room.jsx";
 import Settings from "./pages/Settings.jsx";
 import Visitors from "./pages/Visitors.jsx";
+import ComplaintAlerts from "./ui/ComplaintAlerts.jsx";
 
 function Guard({ children }) {
   const { user, ready } = useAuth();
   const location = useLocation();
+
+  /* Telegram alerts run on every protected page */
+  if (user) return (
+    <>
+      <ComplaintAlerts />
+      {children}
+    </>
+  );
 
   if (!ready) return null;
 

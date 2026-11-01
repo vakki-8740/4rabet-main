@@ -388,13 +388,19 @@ export default function Settings() {
           <div className="adm-hint">
             <b>How to set it up:</b>
             <br />
-            1. Telegram me <b>@BotFather</b> kholein aur <b>/newbot</b> se bot banayein.
+            1. Open <b>@BotFather</b> on Telegram and create a bot with <b>/newbot</b>.
             <br />
             2. Copy the bot token and paste it below.
             <br />
             3. Create your notification group and add the bot to it.
             <br />
-            4. Group ka <b>chat ID</b> neeche daalein.
+            4. Paste the group&apos;s <b>chat ID</b> below.
+          </div>
+
+          <div className="adm-hint" style={{ background: "rgba(79,107,237,.07)" }}>
+            <b>Where the alerts are sent from:</b> this device. The token is saved in this
+            browser only, so keep the admin panel open (or installed as an app) to receive a
+            message the moment a complaint arrives. Alerts already sent are never repeated.
           </div>
 
           <form className="adm-form" onSubmit={saveTg}>

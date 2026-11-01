@@ -76,8 +76,8 @@ export default function Complaint() {
               <h3>{missing ? "Complaint not found" : "Loading complaint..."}</h3>
               <p>
                 {missing
-                  ? "Ye complaint delete ho chuki hai ya link galat hai."
-                  : "Cloud se data aa raha hai."}
+                  ? "This complaint has been deleted, or the link is wrong."
+                  : "Loading the data from the cloud."}
               </p>
               {missing && (
                 <Link className="btn" to="/">

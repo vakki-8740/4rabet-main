@@ -63,11 +63,11 @@ export default function Login() {
 
     const mail = email.trim();
     if (!mail) {
-      setErr("Email daalein.");
+      setErr("Enter your email.");
       return;
     }
     if (!pass) {
-      setErr("Password daalein.");
+      setErr("Enter your password.");
       return;
     }
     if (pass.length < 6) {
