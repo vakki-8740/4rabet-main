@@ -752,42 +752,93 @@ final class Repo
         return $this->messagesSince($chatId, 0, $limit);
     }
 
-    public function editMessage($chatId, $msgId, $text, $who)
+    /**
+     * Message edit.
+     *   $isAdmin = false -> sirf apna (same $who) text message
+     *   $isAdmin = true  -> koi bhi message (admin panel)
+     * Audit: editedAt + editedBy record me save hota hai.
+     *
+     * @return array updated message
+     */
+    public function editMessage($chatId, $msgId, $text, $who, $isAdmin = false, $byEmail = '')
     {
         $chatId = V::id($chatId, 40);
         $msgId  = V::id($msgId, 40);
         $text   = V::str($text, self::TEXT_MAX);
+
+        if ($chatId === '' || $msgId === '') {
+            throw new ApiError('chat ya message id sahi nahi hai');
+        }
         if ($text === '') {
             throw new ApiError('message khaali nahi ho sakta');
         }
 
-        $done = false;
-        $this->s->transaction('chats/' . $chatId . '/messages.json', function ($d) use ($msgId, $text, $who, &$done) {
+        $now     = $this->s->now();
+        $updated = null;
+        $isLast  = false;
+
+        $rel = 'chats/' . $chatId . '/messages.json';
+
+        $this->s->transaction($rel, function ($d) use ($msgId, $text, $who, $isAdmin, $byEmail, $now, &$updated, &$isLast) {
             if (!is_array($d) || !isset($d['items']) || !is_array($d['items'])) {
                 return null;
             }
+
+            $lastIdx = count($d['items']) - 1;
+
             foreach ($d['items'] as $i => $m) {
-                if (is_array($m) && isset($m['id']) && $m['id'] === $msgId) {
-                    /* sirf apna text message edit ho */
-                    if ((isset($m['who']) ? $m['who'] : '') !== $who) {
-                        throw new ApiError('sirf apna message edit kar sakte ho', 403);
-                    }
-                    if (isset($m['attachment'])) {
-                        throw new ApiError('attachment wala message edit nahi hota', 403);
-                    }
-                    $d['items'][$i]['text'] = $text;
-                    $d['items'][$i]['editedAt'] = gmdate('Y-m-d\TH:i:s\Z');
-                    $done = true;
-                    return $d;
+                if (!is_array($m) || !isset($m['id']) || $m['id'] !== $msgId) {
+                    continue;
                 }
+
+                /* permission: admin sab edit kar sakta hai, user sirf apna */
+                if (!$isAdmin && (isset($m['who']) ? $m['who'] : '') !== $who) {
+                    throw new ApiError('sirf apna message edit kar sakte ho', 403);
+                }
+
+                /* attachment wala message edit nahi hota (caption support nahi hai) */
+                if (isset($m['attachment'])) {
+                    throw new ApiError('attachment wala message edit nahi hota', 403);
+                }
+
+                $d['items'][$i]['text']     = $text;
+                $d['items'][$i]['editedAt'] = $now;
+                $d['items'][$i]['editedBy'] = $isAdmin
+                    ? ($byEmail !== '' ? $byEmail : 'admin')
+                    : 'user';
+
+                $updated = $d['items'][$i];
+                $isLast  = ($i === $lastIdx);
+
+                return $d;
             }
+
             return null;
         }, null);
 
-        if (!$done) {
+        if ($updated === null) {
             throw new ApiError('message nahi mila', 404);
         }
-        return true;
+
+        /* last message edit hua ho to chat summary (list preview) bhi refresh karo */
+        if ($isLast) {
+            $preview = function_exists('mb_substr') ? mb_substr($text, 0, 90) : substr($text, 0, 90);
+
+            $chat = $this->s->transaction('chats/' . $chatId . '/chat.json', function ($c) use ($preview, $now) {
+                if (!is_array($c) || !isset($c['id'])) {
+                    return null;
+                }
+                $c['lastText']  = $preview;
+                $c['updatedAt'] = $now;
+                return $c;
+            }, null);
+
+            if (is_array($chat)) {
+                $this->s->upsertInList('chats/index.json', $this->chatSummary($chat), 'id', self::LIST_CAP);
+            }
+        }
+
+        return $updated;
     }
 
     public function deleteMessage($chatId, $msgId, $who, $isAdmin = false)

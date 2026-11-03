@@ -269,6 +269,10 @@
       name: m.name || ""
     };
 
+    /* edit ka audit trail (UI "edited" badge dikhata hai) */
+    if (m.editedAt) out.editedAt = m.editedAt;
+    if (m.editedBy) out.editedBy = m.editedBy;
+
     var a = m.attachment;
     if (a && a.url) {
       var u = absUrl(a.url);
@@ -511,20 +515,38 @@
     });
   }
 
+  /**
+   * Message edit.
+   * Admin token ho to admin route (kisi ka bhi message edit ho sakta hai),
+   * warna user route (sirf apna message).
+   */
   function editMessage(id, msgId, text) {
-    return request("PATCH", "/chats/" + encodeURIComponent(id) + "/messages/" + encodeURIComponent(msgId),
-      { text: String(text || "") })
-      .then(function (res) {
-        if (!res.ok) return { ok: false, error: res.error };
-        var st = chats[id];
-        if (st) {
-          for (var i = 0; i < st.items.length; i++) {
-            if (st.items[i].id === msgId) { st.items[i].text = String(text || ""); break; }
+    var base = token() ? "/admin/chats/" : "/chats/";
+    var path = base + encodeURIComponent(id) + "/messages/" + encodeURIComponent(msgId);
+
+    return request("PATCH", path, { text: String(text || "") }).then(function (res) {
+      if (!res.ok) return { ok: false, error: res.error };
+
+      var st = chats[id];
+      var fresh = (res.data && res.data.message) || null;
+      if (st) {
+        for (var i = 0; i < st.items.length; i++) {
+          if (st.items[i].id === msgId) {
+            st.items[i].text = fresh ? String(fresh.text || "") : String(text || "");
+            st.items[i].editedAt = (fresh && fresh.editedAt) || new Date().toISOString();
+            if (fresh && fresh.editedBy) st.items[i].editedBy = fresh.editedBy;
+            break;
           }
-          notify(st);
         }
-        return { ok: true };
-      });
+        /* last message edit hua to preview bhi refresh */
+        if (st.chat && st.items.length && st.items[st.items.length - 1].id === msgId) {
+          st.chat.lastText = String(text || "").slice(0, 90);
+        }
+        notify(st);
+      }
+
+      return { ok: true, message: fresh };
+    });
   }
 
   function deleteMessage(id, msgId) {
@@ -982,6 +1004,8 @@
       return request("POST", "/admin/chats/" + encodeURIComponent(id) + "/messages", fd);
     },
     deleteChat: deleteChat,
+    editMessage: function (id, msgId, text) { return editMessage(id, msgId, text); },
+    deleteMessage: function (id, msgId) { return deleteMessage(id, msgId); },
 
     /* ---- Google Drive (backup + mirror) ---- */
     drive: {

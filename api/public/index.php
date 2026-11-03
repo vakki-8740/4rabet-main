@@ -291,9 +291,11 @@ $router->post('/api/chats/{id}/messages', function (array $p) use ($req, $resp, 
 $router->patch('/api/chats/{id}/messages/{mid}', function (array $p) use ($req, $resp, $repo) {
     $j = $req->json();
     $text = is_array($j) && isset($j['text']) ? (string) $j['text'] : '';
-    $repo->editMessage($p['id'], $p['mid'], $text, 'user');
 
-    return $resp->json(array('ok' => true));
+    /* user sirf apna message edit kar sakta hai (Repo 403 deta hai) */
+    $msg = $repo->editMessage($p['id'], $p['mid'], $text, 'user', false, '');
+
+    return $resp->json(array('ok' => true, 'message' => $msg));
 });
 
 $router->delete('/api/chats/{id}/messages/{mid}', function (array $p) use ($req, $resp, $repo) {
@@ -497,6 +499,35 @@ $router->post('/api/admin/chats/{id}/messages', function (array $p) use ($req, $
     $out = $repo->appendMessage($p['id'], 'admin', $msg, $me['sub']);
 
     return $resp->json(array('ok' => true, 'message' => $out), 201);
+});
+
+/* admin kisi ka bhi message edit kar sakta hai (audit: editedBy) */
+$router->patch('/api/admin/chats/{id}/messages/{mid}', function (array $p) use ($req, $resp, $auth, $repo) {
+    $me = $auth->requireAdmin($req);
+
+    $j = $req->json();
+    if ($j === null) {
+        $j = array();
+    }
+    $text = isset($j['text']) ? (string) $j['text'] : (string) $req->field('text');
+
+    $msg = $repo->editMessage($p['id'], $p['mid'], $text, 'admin', true, (string) $me['sub']);
+
+    return $resp->json(array('ok' => true, 'message' => $msg, 'editedBy' => $me['sub']));
+});
+
+$router->put('/api/admin/chats/{id}/messages/{mid}', function (array $p) use ($req, $resp, $auth, $repo) {
+    $me = $auth->requireAdmin($req);
+
+    $j = $req->json();
+    if ($j === null) {
+        $j = array();
+    }
+    $text = isset($j['text']) ? (string) $j['text'] : (string) $req->field('text');
+
+    $msg = $repo->editMessage($p['id'], $p['mid'], $text, 'admin', true, (string) $me['sub']);
+
+    return $resp->json(array('ok' => true, 'message' => $msg, 'editedBy' => $me['sub']));
 });
 
 $router->post('/api/admin/chats/{id}/read', function (array $p) use ($req, $resp, $auth, $repo) {

@@ -212,6 +212,9 @@ export function mapMessage(m) {
     who: m.who === "admin" ? "admin" : "user",
     text: String(m.text || ""), at: m.at || "", name: m.name || "",
   };
+  /* edit audit trail ("edited" badge) */
+  if (m.editedAt) out.editedAt = m.editedAt;
+  if (m.editedBy) out.editedBy = m.editedBy;
   const a = m.attachment;
   if (a && a.url) {
     const u = absUrl(a.url);
@@ -398,6 +401,37 @@ export function deleteChat(id) {
     if (!res.ok) return { ok: false, error: res.error };
     if (chats[id]) { if (chats[id].timer) clearTimeout(chats[id].timer); delete chats[id]; }
     return { ok: true };
+  });
+}
+
+/**
+ * Message edit. Admin token ho to admin route (koi bhi message),
+ * warna user route (sirf apna).
+ */
+export function editMessage(id, msgId, text) {
+  const base = getToken() ? "/admin/chats/" : "/chats/";
+  const path = base + encodeURIComponent(id) + "/messages/" + encodeURIComponent(msgId);
+
+  return request("PATCH", path, { text: String(text || "") }).then((res) => {
+    if (!res.ok) return { ok: false, error: res.error };
+
+    const st = chats[id];
+    const fresh = (res.data && res.data.message) || null;
+    if (st) {
+      st.items.forEach((it) => {
+        if (it.id === msgId) {
+          it.text = fresh ? String(fresh.text || "") : String(text || "");
+          it.editedAt = (fresh && fresh.editedAt) || new Date().toISOString();
+          if (fresh && fresh.editedBy) it.editedBy = fresh.editedBy;
+        }
+      });
+      if (st.chat && st.items.length && st.items[st.items.length - 1].id === msgId) {
+        st.chat.lastText = String(text || "").slice(0, 90);
+      }
+      notify(st);
+    }
+
+    return { ok: true, message: fresh };
   });
 }
 

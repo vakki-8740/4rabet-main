@@ -313,7 +313,7 @@ window.AdminChat = (function () {
       paintLatest();
     }
 
-    /* ---------- popup (read only) ---------- */
+    /* ---------- popup (read + EDIT) ---------- */
 
     var popup = document.createElement("div");
     popup.className = "modal-backdrop";
@@ -323,17 +323,69 @@ window.AdminChat = (function () {
         '<h3 class="modal-title chat-popup-title">Chat Message</h3>' +
         '<p class="chat-popup-when"></p>' +
         '<div class="chat-popup-body"></div>' +
-        '<button type="button" class="btn btn--block popup-close">Close</button>' +
+        '<p class="chat-popup-when pp-edited" style="display:none"></p>' +
+        '<button type="button" class="btn btn--block pp-edit">Edit Message</button>' +
+        '<div class="chat-popup-edit" style="display:none">' +
+          '<textarea rows="4" maxlength="4000" spellcheck="false"></textarea>' +
+          '<div class="popup-edit-row">' +
+            '<button type="button" class="btn btn--block pp-save"><span class="btn-text">Save</span></button>' +
+            '<button type="button" class="btn btn--ghost pp-cancel">Cancel</button>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="btn btn--ghost popup-close">Close</button>' +
       '</div>';
     document.body.appendChild(popup);
 
-    var ppTitle = popup.querySelector(".chat-popup-title");
-    var ppWhen  = popup.querySelector(".chat-popup-when");
-    var ppBody  = popup.querySelector(".chat-popup-body");
+    var ppTitle   = popup.querySelector(".chat-popup-title");
+    var ppWhen    = popup.querySelector(".chat-popup-when");
+    var ppBody    = popup.querySelector(".chat-popup-body");
+    var ppEdited  = popup.querySelector(".pp-edited");
+    var ppEditBtn = popup.querySelector(".pp-edit");
+    var ppEditBox = popup.querySelector(".chat-popup-edit");
+    var ppArea    = ppEditBox.querySelector("textarea");
+    var ppSave    = popup.querySelector(".pp-save");
+    var ppCancel  = popup.querySelector(".pp-cancel");
 
-    function closePopup() { popup.classList.remove("is-open"); }
+    var popupMsg  = null;
+    var popupNode = null;
+
+    function closePopup() {
+      popup.classList.remove("is-open");
+      setEditMode(false);
+    }
+
+    function canEdit(m) {
+      /* attachment wale message edit nahi hote (caption support nahi hai) */
+      return !!m && !m.image && !m.fileName && !!m.id;
+    }
+
+    function showEdited() {
+      if (popupMsg && popupMsg.editedAt) {
+        ppEdited.innerHTML = "<strong>Edited:</strong> " + esc(String(popupMsg.editedAt).slice(0, 19).replace("T", " ")) +
+          (popupMsg.editedBy ? " &middot; by " + esc(popupMsg.editedBy) : "");
+        ppEdited.style.display = "";
+      } else {
+        ppEdited.style.display = "none";
+      }
+    }
+
+    function setEditMode(on) {
+      if (!ppEditBox) return;
+      ppEditBox.style.display = on ? "" : "none";
+      ppBody.style.display    = on ? "none" : "";
+      if (ppEditBtn) {
+        ppEditBtn.style.display = (on || !canEdit(popupMsg)) ? "none" : "";
+      }
+      if (on) {
+        ppArea.value = (popupMsg && popupMsg.text) || "";
+        setTimeout(function () { ppArea.focus(); }, 30);
+      }
+    }
 
     function openPopup(node, m) {
+      popupMsg  = m;
+      popupNode = node;
+
       ppTitle.textContent = m.who === "admin" ? "Your Message" : userName(chatData);
       ppWhen.innerHTML = "<strong>Sent:</strong> " + esc(node.dataset.time);
       ppBody.innerHTML = "";
@@ -358,8 +410,69 @@ window.AdminChat = (function () {
         ppBody.appendChild(p);
       }
 
+      setEditMode(false);
+      showEdited();
+      if (ppEditBtn) ppEditBtn.style.display = canEdit(m) ? "" : "none";
+
       popup.classList.add("is-open");
     }
+
+    /* ---------- edit handlers ---------- */
+
+    ppEditBtn.addEventListener("click", function () { setEditMode(true); });
+    ppCancel.addEventListener("click", function () { setEditMode(false); });
+
+    ppSave.addEventListener("click", function () {
+      if (!popupMsg || !canEdit(popupMsg)) return;
+
+      var t = String(ppArea.value || "").trim();
+      if (!t) { toast("Message khaali nahi ho sakta"); return; }
+      if (t === (popupMsg.text || "")) { setEditMode(false); return; }
+
+      ppSave.disabled = true;
+
+      C.editMessage(id, popupMsg.id, t).then(function (res) {
+        ppSave.disabled = false;
+
+        if (!res || !res.ok) {
+          toast((res && res.error) || "Edit nahi hua");
+          return;
+        }
+
+        toast("Message update ho gaya");
+
+        popupMsg.text     = t;
+        popupMsg.editedAt = (res.message && res.message.editedAt) || new Date().toISOString();
+        if (res.message && res.message.editedBy) popupMsg.editedBy = res.message.editedBy;
+
+        /* bubble turant update (poller baad me waise bhi refresh karta hai) */
+        if (popupNode) {
+          var tx = popupNode.querySelector(".msg-text");
+          if (tx) tx.textContent = t;
+
+          if (!popupNode.querySelector(".msg-edited")) {
+            var ed = document.createElement("span");
+            ed.className = "msg-edited";
+            ed.textContent = "edited";
+            popupNode.appendChild(ed);
+          }
+        }
+
+        ppBody.innerHTML = "";
+        var p = document.createElement("p");
+        p.className = "popup-text";
+        p.textContent = t;
+        ppBody.appendChild(p);
+
+        setEditMode(false);
+        showEdited();
+      });
+    });
+
+    ppArea.addEventListener("keydown", function (e) {
+      if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) { e.preventDefault(); ppSave.click(); }
+      if (e.key === "Escape") { e.preventDefault(); setEditMode(false); }
+    });
 
     popup.querySelector(".popup-x").addEventListener("click", closePopup);
     popup.querySelector(".popup-close").addEventListener("click", closePopup);

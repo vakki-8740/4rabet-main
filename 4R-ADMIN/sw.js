@@ -10,7 +10,7 @@
      hamesha seedha network (data stale nahi hona chahiye)
    ========================================== */
 
-var VERSION = "4r-admin-v5";
+var VERSION = "4r-admin-v6";
 var SHELL = [
   "./",
   "index.html",

@@ -245,6 +245,23 @@ export function send(id, msg) {
     });
 }
 
+/** Admin panel se message edit (Firestore mode). */
+export function editMessage(id, msgId, text) {
+  const c = msgColl(id);
+  if (!c) return Promise.resolve({ ok: false, offline: true, error: reason() });
+
+  const t = String(text || "").trim().slice(0, 4000);
+  if (!t) return Promise.resolve({ ok: false, error: "Message khaali nahi ho sakta" });
+
+  return c.doc(msgId)
+    .update({ text: t, editedAt: new Date().toISOString(), editedBy: "admin" })
+    .then(() => ({ ok: true }))
+    .catch((err) => {
+      setLastError(err);
+      return { ok: false, error: reason() };
+    });
+}
+
 export function markRead(id, side) {
   const r = chatRef(id);
   if (!r) return Promise.resolve(false);

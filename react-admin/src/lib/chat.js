@@ -49,6 +49,7 @@ export const watchMessages = (id, cb) => impl.watchMessages(id, cb);
 export const send = (id, msg) => impl.send(id, msg);
 export const markRead = (id, side) => impl.markRead(id, side);
 export const deleteChat = (id) => impl.deleteChat(id);
+export const editMessage = (id, msgId, text) => impl.editMessage(id, msgId, text);
 export const deleteMessage = (id, msgId) =>
   MODE === "api" ? API.deleteMessage(id, msgId) : Promise.resolve({ ok: false, error: "Firestore mode me delete nahi" });
 

@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ADMIN_NAME, formatDateTime, shortTime, userName } from "../lib/admin.js";
 import {
   deleteChat,
+  editMessage,
   getChat,
   isOnline,
   markRead,
@@ -37,6 +38,9 @@ export default function Room() {
   const [offline, setOffline] = useState(false);
   const [whyText, setWhyText] = useState("");
   const [popup, setPopup] = useState(null);
+  const [editMode, setEditMode] = useState(false);
+  const [editText, setEditText] = useState("");
+  const [editBusy, setEditBusy] = useState(false);
   const [showLatest, setShowLatest] = useState(false);
 
   const boxRef = useRef(null);
@@ -171,7 +175,50 @@ export default function Room() {
   };
 
   const openPopup = (m) => {
+    setEditMode(false);
+    setEditText("");
     setPopup({ m, time: formatDateTime(m.at) });
+  };
+
+  const closePopup = () => {
+    setPopup(null);
+    setEditMode(false);
+    setEditBusy(false);
+  };
+
+  /* ---------- message edit (admin kisi ka bhi message edit kar sakta hai) ---------- */
+  const canEdit = (m) => !!m && !m.image && !m.fileName;
+
+  const startEdit = () => {
+    if (!popup || !canEdit(popup.m)) return;
+    setEditText(popup.m.text || "");
+    setEditMode(true);
+  };
+
+  const saveEdit = () => {
+    if (!popup) return;
+
+    const t = editText.trim();
+    if (!t) {
+      toast("Message khaali nahi ho sakta", true);
+      return;
+    }
+    if (t === (popup.m.text || "")) {
+      setEditMode(false);
+      return;
+    }
+
+    setEditBusy(true);
+    editMessage(id, popup.m.id, t).then((res) => {
+      setEditBusy(false);
+      if (res && res.ok) {
+        toast("Message update ho gaya");
+        setEditMode(false);
+        setPopup(null);
+      } else {
+        toast((res && res.error) || "Edit nahi hua", true);
+      }
+    });
   };
 
   const name = chat ? userName(chat) : "Loading...";
@@ -332,11 +379,11 @@ export default function Room() {
           <div
             className="modal-backdrop is-open"
             onClick={(e) => {
-              if (e.target === e.currentTarget) setPopup(null);
+              if (e.target === e.currentTarget) closePopup();
             }}
           >
             <div className="modal chat-popup">
-              <button type="button" className="popup-x" aria-label="Close" onClick={() => setPopup(null)}>
+              <button type="button" className="popup-x" aria-label="Close" onClick={closePopup}>
                 <IconX />
               </button>
               <h3 className="modal-title chat-popup-title">
@@ -351,13 +398,67 @@ export default function Room() {
                     <img className="popup-img" src={popup.m.image} alt={popup.m.fileName || "image"} />
                     <p className="popup-file-name">{popup.m.fileName || ""}</p>
                   </>
+                ) : editMode ? (
+                  <div className="chat-popup-edit">
+                    <textarea
+                      rows="4"
+                      value={editText}
+                      autoFocus
+                      maxLength={4000}
+                      onChange={(e) => setEditText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
+                          e.preventDefault();
+                          saveEdit();
+                        }
+                        if (e.key === "Escape") {
+                          e.preventDefault();
+                          setEditMode(false);
+                        }
+                      }}
+                    />
+                    <div className="popup-edit-row">
+                      <button
+                        type="button"
+                        className={"btn btn--block" + (editBusy ? " is-loading" : "")}
+                        disabled={editBusy}
+                        onClick={saveEdit}
+                      >
+                        <span className="btn-text">Save</span>
+                      </button>
+                      <button
+                        type="button"
+                        className="btn btn--ghost"
+                        disabled={editBusy}
+                        onClick={() => setEditMode(false)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
                 ) : (
                   <p className="popup-text">{popup.m.text || popup.m.fileName || ""}</p>
                 )}
               </div>
-              <button type="button" className="btn btn--block popup-close" onClick={() => setPopup(null)}>
-                Close
-              </button>
+
+              {popup.m.editedAt && (
+                <p className="chat-popup-when">
+                  <strong>Edited:</strong> {formatDateTime(popup.m.editedAt)}
+                  {popup.m.editedBy ? " · by " + popup.m.editedBy : ""}
+                </p>
+              )}
+
+              {canEdit(popup.m) && !editMode && (
+                <button type="button" className="btn btn--block" onClick={startEdit}>
+                  <span className="btn-text">Edit Message</span>
+                </button>
+              )}
+
+              {!editMode && (
+                <button type="button" className="btn btn--ghost popup-close" onClick={closePopup}>
+                  Close
+                </button>
+              )}
             </div>
           </div>
         )}

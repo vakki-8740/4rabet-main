@@ -105,6 +105,7 @@ Read-modify-write hamesha `transaction()` ke andar karo.
 | GET/PATCH/DELETE | `/api/admin/complaints/{id}` (PATCH `{status: pending\|previewing\|successful}`) |
 | GET | `/api/admin/chats?unread` · `/api/admin/chats/{id}/messages?since=` |
 | POST | `/api/admin/chats/{id}/messages` · `/api/admin/chats/{id}/read` |
+| PATCH/PUT | `/api/admin/chats/{id}/messages/{mid}` — **kisi ka bhi message edit** (`{text}`) → record me `editedAt` + `editedBy` (audit), last message ho to chat preview bhi refresh |
 | DELETE | `/api/admin/chats/{id}` |
 | GET/PUT | `/api/admin/settings` |
 | POST | `/api/admin/telegram/test` · `/api/admin/telegram/flush` |

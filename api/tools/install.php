@@ -338,6 +338,37 @@ if (isset($args['selftest'])) {
     }
     check('message edit', $edited);
 
+    /* admin user ka message edit kar sake (audit ke saath) */
+    $admEdit = $repo->editMessage($cid, $m1['id'], 'admin ne edit kiya', 'admin', true, 'selftest@example.com');
+    check('admin can edit user message', is_array($admEdit) && $admEdit['text'] === 'admin ne edit kiya');
+    check('edit audit (editedBy/editedAt)', isset($admEdit['editedBy'], $admEdit['editedAt'])
+        && $admEdit['editedBy'] === 'selftest@example.com', isset($admEdit['editedBy']) ? $admEdit['editedBy'] : '-');
+
+    /* user admin ka message edit na kar paye */
+    $editDenied = false;
+    try {
+        $repo->editMessage($cid, $m2['id'], 'hack', 'user', false, '');
+    } catch (ApiError $e) {
+        $editDenied = $e->getStatus() === 403;
+    }
+    check('cross-role edit blocked (403)', $editDenied);
+
+    /* last message edit -> chat preview refresh */
+    $repo->editMessage($cid, $m2['id'], 'latest admin text', 'admin', true, 'selftest@example.com');
+    $chatAfter = $repo->getChat($cid);
+    check('chat lastText refreshed after editing last message',
+        isset($chatAfter['lastText']) && $chatAfter['lastText'] === 'latest admin text',
+        isset($chatAfter['lastText']) ? $chatAfter['lastText'] : '-');
+
+    /* khaali text reject */
+    $emptyDenied = false;
+    try {
+        $repo->editMessage($cid, $m1['id'], '   ', 'admin', true, '');
+    } catch (ApiError $e) {
+        $emptyDenied = true;
+    }
+    check('empty edit rejected', $emptyDenied);
+
     /* dusra user admin ka message delete na kar paye */
     $denied = false;
     try {
