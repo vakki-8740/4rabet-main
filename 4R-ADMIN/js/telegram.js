@@ -16,6 +16,61 @@ window.FourRTelegram = (function () {
     enabled: true
   };
 
+  /* ---------- Input cleaning ----------
+     A pasted token often comes with the whole URL or an extra "bot"
+     prefix, and that makes Telegram answer 404 (Not Found).
+     We clean it up so the request always looks like:
+       https://api.telegram.org/bot<TOKEN>/sendMessage                 */
+
+  function cleanToken(v) {
+    var t = String(v || "").trim();
+    t = t.replace(/^https?:\/\/api\.telegram\.org\//i, "");
+    t = t.replace(/^bot/i, "");
+    t = t.replace(/\/sendMessage$/i, "");
+    t = t.replace(/\s+/g, "");
+    t = t.replace(/\/+$/, "");
+    return t;
+  }
+
+  function cleanChatId(v) {
+    var c = String(v || "").trim();
+    c = c.replace(/^https?:\/\/t\.me\//i, "@");
+    c = c.replace(/\s+/g, "");
+    return c;
+  }
+
+  /* a real bot token looks like  1234567890:AAH-abc_DEF...  */
+  function tokenLooksValid(v) {
+    return /^\d{6,}:[A-Za-z0-9_-]{25,}$/.test(cleanToken(v));
+  }
+
+  /* Telegram ka error code -> a sentence a normal person understands */
+  function explainError(status, desc) {
+    var d = String(desc || "");
+    var code = Number(status) || 0;
+
+    if (code === 404) {
+      return "Telegram could not find this bot, so the Bot Token is wrong. " +
+             "Copy it again from @BotFather (it looks like 1234567890:AAH...).";
+    }
+    if (code === 401) {
+      return "Telegram rejected the Bot Token. Copy it again from @BotFather.";
+    }
+    if (code === 403) {
+      return "The bot is not allowed to message this chat. Add the bot to the group and send /start there.";
+    }
+    if (code === 400 && /chat not found/i.test(d)) {
+      return "The Chat ID is wrong. Add the bot to the group, send /start, then use the group's chat ID (it starts with -100).";
+    }
+    if (code === 400 && /not enough rights/i.test(d)) {
+      return "The bot cannot post in that group. Make it an admin there, or allow it to send messages.";
+    }
+    if (code === 429) {
+      return "Telegram is limiting the messages (too many at once). Please try again after a minute.";
+    }
+    return d || ("Telegram error " + code);
+  }
+
   /* ---------- Settings ---------- */
 
   function getSettings() {
@@ -23,8 +78,8 @@ window.FourRTelegram = (function () {
       var raw = localStorage.getItem(SETTINGS_KEY);
       var data = raw ? JSON.parse(raw) : {};
       return {
-        botToken: (data.botToken || "").trim(),
-        chatId:    (data.chatId || "").trim(),
+        botToken: cleanToken(data.botToken),
+        chatId:    cleanChatId(data.chatId),
         enabled:   data.enabled !== false
       };
     } catch (e) {
@@ -34,8 +89,8 @@ window.FourRTelegram = (function () {
 
   function saveSettings(patch) {
     var next = {
-      botToken: patch.botToken !== undefined ? String(patch.botToken).trim() : getSettings().botToken,
-      chatId:    patch.chatId    !== undefined ? String(patch.chatId).trim()    : getSettings().chatId,
+      botToken: patch.botToken !== undefined ? cleanToken(patch.botToken) : getSettings().botToken,
+      chatId:    patch.chatId    !== undefined ? cleanChatId(patch.chatId) : getSettings().chatId,
       enabled:   patch.enabled   !== undefined ? !!patch.enabled               : getSettings().enabled
     };
 
@@ -148,10 +203,15 @@ window.FourRTelegram = (function () {
       })
     })
       .then(function (res) {
-        return res.json().then(function (json) {
+        /* read the body as text first: a wrong token answers 404 with a
+           body that is not always JSON, and "HTTP 404" told nobody anything */
+        return res.text().then(function (raw) {
+          var json = {};
+          try { json = JSON.parse(raw); } catch (e) { json = {}; }
+
           if (!res.ok || !json.ok) {
-            var why = (json && json.description) || ("HTTP " + res.status);
-            throw new Error(why);
+            var status = (json && json.error_code) || res.status;
+            throw new Error(explainError(status, json && json.description));
           }
           return json.result;
         });
@@ -187,6 +247,33 @@ window.FourRTelegram = (function () {
     var q = readQueue();
     q.push(text);
     writeQueue(q);
+  }
+
+  /* Public: verify the token with getMe (used by the Test button) */
+  function check() {
+    var s = getSettings();
+    if (!s.botToken) return Promise.reject(new Error("The Bot Token is empty."));
+
+    return fetch("https://api.telegram.org/bot" + s.botToken + "/getMe")
+      .then(function (res) {
+        return res.text().then(function (raw) {
+          var json = {};
+          try { json = JSON.parse(raw); } catch (e) { json = {}; }
+
+          if (!res.ok || !json.ok) {
+            var status = (json && json.error_code) || res.status;
+            throw new Error(explainError(status, json && json.description));
+          }
+          return json.result || {};
+        });
+      })
+      .catch(function (err) {
+        var msg = (err && err.message) || "Network error";
+        if (/Failed to fetch|NetworkError|Load failed/i.test(msg)) {
+          throw new Error("Network error - Telegram could not be reached.");
+        }
+        throw err;
+      });
   }
 
   function flushQueue() {
@@ -234,6 +321,11 @@ window.FourRTelegram = (function () {
     isReady: isReady,
     buildMessage: buildMessage,
     sendText: sendText,
+    check: check,
+    cleanToken: cleanToken,
+    cleanChatId: cleanChatId,
+    tokenLooksValid: tokenLooksValid,
+    explainError: explainError,
     notifyComplaint: notifyComplaint,
     flushQueue: flushQueue,
     queueSize: function () { return readQueue().length; }

@@ -134,6 +134,19 @@ export default function Settings() {
     const t = T();
     if (!t) return;
 
+    if (String(tg.botToken || "").trim() && !t.tokenLooksValid(tg.botToken)) {
+      toast(
+        "The Bot Token looks wrong - it should look like 1234567890:AAH... Copy it again from @BotFather.",
+        true
+      );
+      return;
+    }
+
+    if (String(tg.chatId || "").trim() && tg.chatId.trim().toLowerCase() === "@channelusername") {
+      toast("Enter your own group chat ID, not the example text.", true);
+      return;
+    }
+
     const ok = t.saveSettings({
       botToken: tg.botToken.trim(),
       chatId: tg.chatId.trim()
@@ -158,14 +171,20 @@ export default function Settings() {
     }
 
     setTestBusy(true);
-    t.sendText(
-      "\u2705 <b>4R-ADMIN</b> connection test\n" +
-        "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n" +
-        "Telegram alerts are <b>ON</b>.\n" +
-        "Every new complaint will now arrive here."
-    )
+
+    /* 1) is the token a real bot?   2) can it post in this chat? */
+    t.check()
+      .then((me) => {
+        toast("Bot verified: @" + ((me && me.username) || "ok") + " - sending the test message...");
+        return t.sendText(
+          "\u2705 <b>4R-ADMIN</b> connection test\n" +
+            "\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\n" +
+            "Telegram alerts are <b>ON</b>.\n" +
+            "Every new complaint will now arrive here."
+        );
+      })
       .then(() => toast("Test Message Sent"))
-      .catch((err) => toast("Fail: " + err.message, true))
+      .catch((err) => toast(err.message || "Could not send the test message", true))
       .then(() => setTestBusy(false));
   };
 
