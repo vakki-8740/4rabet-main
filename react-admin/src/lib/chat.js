@@ -245,6 +245,43 @@ export function send(id, msg) {
     });
 }
 
+export function editMessage(id, msgId, text) {
+  const D = db();
+  const r = chatRef(id);
+  const m = msgColl(id);
+
+  if (!D || !r || !m) return Promise.resolve({ ok: false, offline: true });
+  if (!msgId) return Promise.resolve({ ok: false, error: "Message not found." });
+
+  const val = String(text || "").trim();
+  if (!val) return Promise.resolve({ ok: false, error: "The message cannot be empty." });
+
+  const ref = m.doc(msgId);
+  const at = new Date().toISOString();
+  let oldPreview = "";
+
+  return ref
+    .get()
+    .then((snap) => {
+      if (!snap.exists) throw new Error("This message has been deleted.");
+      oldPreview = preview(snap.data() || {});
+      return ref.set({ text: val.slice(0, 4000), editedAt: at }, { merge: true });
+    })
+    .then(() => r.get())
+    .then((snap) => {
+      /* if the edited message was the latest one, refresh the chat-list preview */
+      if (snap.exists && oldPreview && (snap.data() || {}).lastText === oldPreview) {
+        return r.set({ lastText: val.slice(0, 90) }, { merge: true });
+      }
+      return null;
+    })
+    .then(() => ({ ok: true, offline: false }))
+    .catch((err) => {
+      setLastError(err);
+      return { ok: false, offline: true, error: err.message };
+    });
+}
+
 export function markRead(id, side) {
   const r = chatRef(id);
   if (!r) return Promise.resolve(false);

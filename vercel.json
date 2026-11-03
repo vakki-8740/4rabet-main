@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "redirects": [
+    { "source": "/admin", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/admin/", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/admin.html", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/login", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/login.html", "destination": "/4R-ADMIN/login.html", "permanent": false },
+    { "source": "/panel", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/dashboard", "destination": "/react-admin/dist/", "permanent": false },
+    { "source": "/chat", "destination": "/online-chat.html", "permanent": false },
+    { "source": "/chat.html", "destination": "/online-chat.html", "permanent": false },
+    { "source": "/support", "destination": "/index.html", "permanent": false }
+  ]
+}

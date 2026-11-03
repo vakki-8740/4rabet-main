@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { ADMIN_NAME, formatDateTime, shortTime, userName } from "../lib/admin.js";
 import {
   deleteChat,
+  editMessage,
   getChat,
   isOnline,
   markRead,
@@ -20,6 +21,7 @@ import {
   IconBack,
   IconFile,
   IconImage,
+  IconPencil,
   IconTrash,
   IconX
 } from "../ui/icons.jsx";
@@ -35,6 +37,7 @@ export default function Room() {
   const [busy, setBusy] = useState(false);
   const [offline, setOffline] = useState(false);
   const [popup, setPopup] = useState(null);
+  const [editing, setEditing] = useState(null); /* { id, text } */
   const [showLatest, setShowLatest] = useState(false);
 
   const boxRef = useRef(null);
@@ -171,6 +174,31 @@ export default function Room() {
     setPopup({ m, time: formatDateTime(m.at) });
   };
 
+  const startEdit = (m) => {
+    setPopup(null);
+    setEditing({ id: m.id, text: m.text || "" });
+  };
+
+  const saveEdit = () => {
+    if (!editing || busy) return;
+    const val = String(editing.text || "").trim();
+    if (!val) {
+      toast("The message cannot be empty");
+      return;
+    }
+
+    setBusy(true);
+    editMessage(id, editing.id, val).then((res) => {
+      setBusy(false);
+      if (res && res.ok) {
+        setEditing(null);
+        toast("Message updated");
+      } else {
+        toast((res && res.error) || "Could not update the message");
+      }
+    });
+  };
+
   const name = chat ? userName(chat) : "Loading...";
   const meta = chat
     ? "Chat ID: " +
@@ -260,10 +288,60 @@ export default function Room() {
                         <span className="msg-file-name">{m.fileName}</span>
                       )}
                     </>
+                  ) : editing && editing.id === m.id ? (
+                    <div
+                      className="msg-edit"
+                      onClick={(e) => e.stopPropagation()}
+                      onKeyDown={(e) => e.stopPropagation()}
+                    >
+                      <textarea
+                        className="msg-edit-box"
+                        value={editing.text}
+                        rows={Math.min(6, Math.max(2, Math.ceil(editing.text.length / 34)))}
+                        autoFocus
+                        onChange={(e) => setEditing({ id: editing.id, text: e.target.value })}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter" && !e.shiftKey) {
+                            e.preventDefault();
+                            saveEdit();
+                          }
+                          if (e.key === "Escape") setEditing(null);
+                        }}
+                      />
+                      <div className="msg-edit-acts">
+                        <button
+                          type="button"
+                          className="msg-edit-save"
+                          disabled={busy}
+                          onClick={saveEdit}
+                        >
+                          {busy ? "Saving..." : "Save"}
+                        </button>
+                        <button
+                          type="button"
+                          className="msg-edit-cancel"
+                          onClick={() => setEditing(null)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
                   ) : (
                     <>
                       <p className="msg-text">{m.text || ""}</p>
                       {m.editedAt && <span className="msg-edited">edited</span>}
+                      <button
+                        type="button"
+                        className="msg-edit-btn"
+                        title="Edit message"
+                        aria-label="Edit message"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          startEdit(m);
+                        }}
+                      >
+                        <IconPencil size={14} />
+                      </button>
                     </>
                   )}
                 </div>
@@ -352,6 +430,16 @@ export default function Room() {
                   <p className="popup-text">{popup.m.text || popup.m.fileName || ""}</p>
                 )}
               </div>
+              {!popup.m.image && popup.m.text ? (
+                <button
+                  type="button"
+                  className="btn btn--block popup-edit"
+                  onClick={() => startEdit(popup.m)}
+                >
+                  Edit this message
+                </button>
+              ) : null}
+
               <button type="button" className="btn btn--block popup-close" onClick={() => setPopup(null)}>
                 Close
               </button>
