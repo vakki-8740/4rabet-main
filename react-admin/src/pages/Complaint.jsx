@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   FIELD_ORDER,
   STATUS,
+  extraFields,
   formatDateTime,
   statusOf
 } from "../lib/admin.js";
@@ -145,6 +146,14 @@ export default function Complaint() {
                     </div>
                   );
                 })}
+
+                {/* FIELD_ORDER ke bahar ke fields bhi dikhao - data kabhi na chhute */}
+                {extraFields(d).map((f) => (
+                  <div className="adm-row" key={f.key}>
+                    <span className="adm-row-k">{f.label}</span>
+                    <span className="adm-row-v is-plain">{String(d[f.key])}</span>
+                  </div>
+                ))}
               </div>
 
               <div className="adm-acts">

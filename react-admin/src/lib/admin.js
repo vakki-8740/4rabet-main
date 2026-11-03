@@ -118,6 +118,29 @@ export function guest(id) {
   return "Guest #" + String(id || "").slice(0, 4).toUpperCase();
 }
 
+/* Unknown field key -> insaan-padhe-jaisa label:
+   aadhaarNumber -> Aadhaar Number, pan_no -> Pan no */
+export function prettify(key) {
+  const s = String(key || "")
+    .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+    .replace(/[_-]+/g, " ")
+    .trim();
+  if (!s) return String(key || "");
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+/* FIELD_ORDER ke bahar ke fields (jo record me maujood hain) */
+export function extraFields(d, order) {
+  const data = d || {};
+  const known = {};
+  (order || FIELD_ORDER).forEach((f) => { known[f.key] = true; });
+
+  return Object.keys(data)
+    .filter((k) => !known[k])
+    .filter((k) => data[k] !== undefined && data[k] !== null && String(data[k]).trim() !== "")
+    .map((k) => ({ key: k, label: prettify(k) }));
+}
+
 export function userName(c) {
   return c && c.userName ? c.userName : guest(c && c.id);
 }

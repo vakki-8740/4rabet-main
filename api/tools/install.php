@@ -293,6 +293,21 @@ if (isset($args['selftest'])) {
     $mine = $repo->listComplaints(array('deviceId' => 'selftest-device'), true, 10);
     check('complaint list by device', $mine['total'] >= 1);
 
+    /* extra/unknown field + invalid mobile bhi store hona chahiye (data loss bug) */
+    $extraRec = $repo->createComplaint('Selftest', array(
+        'userName'   => 'Extra Test',
+        'mobile'     => '12ab',                 /* invalid format - raw rehna chahiye */
+        'panNumber'  => 'ABCDE1234F',           /* FIELD_ORDER me nahi hai */
+        'aadhaarNo'  => 'XXXX-XXXX-1234',
+    ), array(), 'selftest-device', '');
+    $extraGot = $repo->getComplaint($extraRec['id']);
+    check('invalid mobile stored raw (not dropped)',
+        isset($extraGot['data']['mobile']) && $extraGot['data']['mobile'] === '12ab',
+        isset($extraGot['data']['mobile']) ? $extraGot['data']['mobile'] : 'MISSING');
+    check('unknown field stored', isset($extraGot['data']['panNumber']) && $extraGot['data']['panNumber'] === 'ABCDE1234F');
+    check('field label for unknown key', Repo::fieldLabel('panNumber') === 'Pan Number', Repo::fieldLabel('panNumber'));
+    $repo->deleteComplaint($extraRec['id']);
+
     $masked = false;
     foreach ($mine['items'] as $it) {
         if ($it['id'] === $rec['id'] && isset($it['data']['password'])) {

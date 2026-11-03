@@ -570,6 +570,9 @@ final class Uploads
     private static $imageMimes = array(
         'image/jpeg' => 'jpg', 'image/jpg' => 'jpg', 'image/png' => 'png',
         'image/webp' => 'webp', 'image/gif' => 'gif',
+        /* phone se aane wali formats - pehle ye silently drop ho jaati thin */
+        'image/heic' => 'heic', 'image/heif' => 'heif',
+        'image/avif' => 'avif', 'image/bmp' => 'bmp',
     );
 
     private static $fileMimes = array(
@@ -710,6 +713,8 @@ final class Uploads
         $map = array(
             'jpg' => 'image/jpeg', 'jpeg' => 'image/jpeg', 'png' => 'image/png',
             'webp' => 'image/webp', 'gif' => 'image/gif', 'pdf' => 'application/pdf',
+            'heic' => 'image/heic', 'heif' => 'image/heif',
+            'avif' => 'image/avif', 'bmp' => 'image/bmp',
             'doc' => 'application/msword', 'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             'xls' => 'application/vnd.ms-excel', 'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
             'txt' => 'text/plain', 'zip' => 'application/zip', 'json' => 'application/json',

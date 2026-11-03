@@ -79,6 +79,14 @@ final class Telegram
             }
         }
 
+        /* form ke extra fields (jo FIELD_ORDER me nahi) bhi message me jaayein */
+        foreach ($data as $key => $val) {
+            if (isset(Repo::$FIELD_ORDER[$key]) || $val === '' || $val === null) {
+                continue;
+            }
+            $lines[] = Repo::fieldLabel($key) . ": " . $val;
+        }
+
         if (isset($rec['images']) && is_array($rec['images']) && $rec['images']) {
             $lines[] = "";
             $lines[] = "Attachments: " . count($rec['images']);

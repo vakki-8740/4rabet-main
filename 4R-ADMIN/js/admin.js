@@ -357,6 +357,16 @@ window.AdminPanel = (function () {
     return out;
   }
 
+  /* unknown field key -> label: aadhaarNumber -> Aadhaar Number */
+  function prettify(key) {
+    var s = String(key || "")
+      .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+      .replace(/[_-]+/g, " ")
+      .trim();
+    if (!s) return String(key || "");
+    return s.charAt(0).toUpperCase() + s.slice(1);
+  }
+
   function rowsHtml(rec) {
     var d = rec.data || {};
     var out = "";
@@ -379,6 +389,18 @@ window.AdminPanel = (function () {
       out += '<div class="adm-row">' +
                '<span class="adm-row-k">' + esc(f.label) + '</span>' +
                '<span class="adm-row-v' + plain + '">' + esc(val) + '</span>' +
+             '</div>';
+    });
+
+    /* FIELD_ORDER ke bahar ke fields bhi dikhao - data kabhi na chhute */
+    Object.keys(d).forEach(function (k) {
+      var known = FIELD_ORDER.some(function (f) { return f.key === k; });
+      var val = d[k];
+      if (known || val === undefined || val === null || String(val).trim() === "") return;
+
+      out += '<div class="adm-row">' +
+               '<span class="adm-row-k">' + esc(prettify(k)) + '</span>' +
+               '<span class="adm-row-v is-plain">' + esc(val) + '</span>' +
              '</div>';
     });
 

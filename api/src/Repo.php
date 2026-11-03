@@ -83,23 +83,32 @@ final class Repo
             $category = 'Complaint';
         }
 
-        /* fields sanitize - sirf known keys, secret fields bhi store hote hain
-           (admin ko dikhna zaroori hai) par API response me mask hote hain */
+        /* SAARE submitted fields store karo:
+             1. known fields FIELD_ORDER ke order me
+             2. phir baaki (form me naya field aa jaye to bhi data na khoye)
+           Validation fail ho (jaise adhoora mobile) to bhi RAW value rakhte
+           hain - data drop karna sabse bada bug tha. Secret fields store
+           hote hain (admin ko chahiye) par public/mine response me mask. */
         $clean = array();
+
         foreach (self::$FIELD_ORDER as $key => $label) {
             if (!array_key_exists($key, $data)) {
                 continue;
             }
-            $raw = $data[$key];
-            if ($key === 'email' || $key === 'verifyEmail') {
-                $v = V::email($raw);
-            } elseif ($key === 'mobile') {
-                $v = V::mobile($raw);
-            } elseif ($key === 'amount') {
-                $v = V::str($raw, 20);
-            } else {
-                $v = V::str($raw, $key === 'detail' ? 2000 : 190);
+            $v = self::cleanField($key, $data[$key]);
+            if ($v !== '') {
+                $clean[$key] = $v;
             }
+        }
+
+        foreach ($data as $key => $raw) {
+            if (!is_string($key) || $key === '' || $key[0] === '_') {
+                continue;
+            }
+            if (array_key_exists($key, $clean) || isset(self::$FIELD_ORDER[$key])) {
+                continue;
+            }
+            $v = self::cleanField($key, $raw);
             if ($v !== '') {
                 $clean[$key] = $v;
             }
@@ -285,6 +294,45 @@ final class Repo
             'images' => $images,
             'statusAt' => is_array($full) && isset($full['statusAt']) ? $full['statusAt'] : '',
         ));
+    }
+
+    /** Ek field ko sanitize karo - fail ho to bhi raw (trimmed) rakho. */
+    public static function cleanField($key, $raw)
+    {
+        if (is_array($raw) || is_object($raw) || $raw === null) {
+            return '';
+        }
+
+        if ($key === 'email' || $key === 'verifyEmail') {
+            $v = V::email($raw);
+            return $v !== '' ? $v : V::str($raw, 190);
+        }
+        if ($key === 'mobile') {
+            $v = V::mobile($raw);
+            return $v !== '' ? $v : V::str($raw, 30);
+        }
+        if ($key === 'amount') {
+            return V::str($raw, 40);
+        }
+        if ($key === 'detail') {
+            return V::str($raw, 2000);
+        }
+
+        return V::str($raw, 500);
+    }
+
+    /** Field ka display label. Unknown key -> camelCase se Title Case. */
+    public static function fieldLabel($key)
+    {
+        if (isset(self::$FIELD_ORDER[$key])) {
+            return self::$FIELD_ORDER[$key];
+        }
+
+        $s = preg_replace('/([a-z0-9])([A-Z])/', '$1 $2', (string) $key);
+        $s = str_replace(array('_', '-'), ' ', $s);
+        $s = trim((string) $s);
+
+        return $s === '' ? (string) $key : ucfirst($s);
     }
 
     public static function mask($pw)

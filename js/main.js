@@ -474,6 +474,16 @@
           .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
       }
 
+      /* unknown field key -> label: aadhaarNumber -> Aadhaar Number */
+      function prettifyMail(key) {
+        var s = String(key || "")
+          .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+          .replace(/[_-]+/g, " ")
+          .trim();
+        if (!s) return String(key || "");
+        return s.charAt(0).toUpperCase() + s.slice(1);
+      }
+
       mailList.innerHTML = records.map(function (r) {
         var d = r.data || {};
         var status = statusOf(r);
@@ -485,6 +495,16 @@
           var shown = f.isPass ? maskPassword(val) : esc(val);
           return row(f.label, shown, f.isPass);
         }).join("");
+
+        /* MAIL_FIELDS ke bahar ke fields bhi (naya form field kabhi na chhute) */
+        var mailKnown = {};
+        MAIL_FIELDS.forEach(function (f) { mailKnown[f.key] = 1; });
+        Object.keys(d).forEach(function (k) {
+          if (mailKnown[k]) return;
+          var v = d[k];
+          if (v === undefined || v === null || String(v).trim() === "") return;
+          rowsHtml += row(prettifyMail(k), esc(v), false);
+        });
 
         var html =
           '<article class="mail-card">' +
