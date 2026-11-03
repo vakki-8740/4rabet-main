@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { signOut } from "../lib/auth.js";
 import { watchChats } from "../lib/chat.js";
-import { IconPhone } from "./icons.jsx";
 
 const BASE = import.meta.env.BASE_URL;
 
@@ -72,15 +71,6 @@ const MenuIcon = {
     </Svg>
   )
 };
-
-export function DesktopNote() {
-  return (
-    <div className="adm-desktop-note">
-      <IconPhone />
-      The admin panel is designed for mobile &mdash; open it on your phone for the best experience.
-    </div>
-  );
-}
 
 export function Footer() {
   return (
@@ -278,7 +268,6 @@ export function Header({ simple }) {
 export default function Shell({ children, simple, footer = true }) {
   return (
     <>
-      <DesktopNote />
       <Header simple={simple} />
       {children}
       {footer && <Footer />}

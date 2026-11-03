@@ -282,7 +282,7 @@ export default function Settings() {
 
   return (
     <Shell>
-      <main className="adm">
+      <main className="adm adm-grid">
         <div className="adm-top">
           <Link className="adm-back" to="/">
             <IconBack />

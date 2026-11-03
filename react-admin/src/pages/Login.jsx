@@ -27,6 +27,12 @@ export default function Login() {
   const [hint, setHint] = useState("");
   const [canInstall, setCanInstall] = useState(false);
 
+  /* the login screen has no sidebar on desktop */
+  useEffect(() => {
+    document.body.classList.add("adm-login-page");
+    return () => document.body.classList.remove("adm-login-page");
+  }, []);
+
   useEffect(() => {
     if (user) navigate(next, { replace: true });
   }, [user, next, navigate]);
